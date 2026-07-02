@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>sw-demo-template71 admin — Add Custom Slider (live vector data)</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+  :root{--navbar:#3C8DBC;--logo:#367FA9;--sidebar:#222D32;--sidebar-tx:#B8C7CE;--content:#ECF0F5;--text:#212529;--muted:#8A929C;--border:#d2d6de;--blue:#3C8DBC;--blue-d:#367FA9;--green:#2EA447;--gray:#6C757D;--cancel:#F4F4F4;--preview-bg:#12131B;--amber-bg:#fcf3e6;--amber-bd:#f0c987;--amber-tx:#8a6d3b;}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:var(--text);background:var(--content)}
+  a{text-decoration:none;color:inherit}input,select,button{font-family:inherit}
+  .navbar{position:fixed;top:0;left:0;right:0;height:50px;display:flex;z-index:30}
+  .logo{width:230px;background:var(--logo);color:#fff;display:flex;align-items:center;padding:0 15px;font-size:18px;font-weight:700}
+  .nav-r{flex:1;background:var(--navbar);display:flex;align-items:center;padding:0 14px;color:#fff;gap:16px}
+  .nav-r .sp{flex:1}.nav-r .it{font-size:13px;color:#eaf3f8;display:flex;align-items:center;gap:6px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .sidebar{position:fixed;top:50px;left:0;bottom:0;width:230px;background:var(--sidebar);overflow-y:auto;z-index:20}
+  .si{display:flex;align-items:center;gap:11px;padding:12px 6px 12px 15px;color:var(--sidebar-tx);font-size:14px;border-left:3px solid transparent;cursor:pointer}
+  .si i.lead{width:18px;text-align:center}.si .car{margin-left:auto;font-size:12px;opacity:.55}
+  .si:hover{background:#2C3B41;color:#fff}.si.on{background:#1E282C;color:#fff;border-left-color:var(--blue)}
+  .sub{background:#2c3b41}.sub .si{padding-left:46px;font-size:13.5px}.sub .si.on{background:#1e282c;border-left-color:#00c0ef}
+  .wrap{margin-left:230px;margin-top:50px;padding:12px 16px 40px;min-height:calc(100vh - 50px)}
+  .ch{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 12px}
+  .ch h1{font-size:23px;font-weight:600;margin:0}.ch h1 .i{font-size:13px;color:#9aa7b0;margin-left:6px}
+  .crumb{font-size:13px;color:#7b8a95}
+  .card{background:#fff;border:1px solid #e3e8ee;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden}
+  .card-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eef1f4}
+  .card-hd .bc{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+  .card-hd .bc .sep{color:#c2ccd3;font-weight:400}.card-hd .bc .dim{color:#7b8a95;font-weight:400}
+  .pv-ctl{display:flex;align-items:center;gap:8px}
+  .zoom{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;background:#fff}
+  .dev{width:32px;height:30px;border:1px solid var(--border);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:#7b8a95;background:#fff;cursor:pointer}
+  .dev.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .cols{display:grid;grid-template-columns:472px 1fr;min-height:600px}
+  .left{border-right:1px solid #eef1f4;padding:16px;display:flex;flex-direction:column}
+  .right{background:var(--preview-bg);padding:16px 18px}
+  .sect-t{font-size:15px;font-weight:600;margin:0 0 10px}
+  .langtabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .langtabs span{padding:5px 12px;font-size:12px;border-radius:4px;background:#eef1f5;color:#5b6b77;cursor:pointer}
+  .langtabs span.on{background:var(--blue);color:#fff}
+  .lbl{display:block;font-size:13px;font-weight:600;margin:0 0 5px}.req{color:#e24b4a}
+  .fc{width:100%;height:34px;border:1px solid var(--border);border-radius:3px;padding:6px 10px;font-size:14px;background:#fff}
+  .fc:disabled{background:#f6f7f9;color:#9aa7b0}
+  .help{font-size:12px;color:var(--muted);margin-top:4px}
+  .ck{display:flex;align-items:center;gap:7px;font-size:13px;margin-top:8px}
+  .filebtn{border:1px solid var(--border);background:#fff;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;color:#444}
+  .tagrow{display:flex;gap:8px;margin-top:6px}.tagrow .fc{flex:1}.swatch{width:110px;border-radius:3px;background:#f6a623}
+  .btn{border:1px solid transparent;border-radius:5px;padding:8px 14px;font-size:14px;cursor:pointer}
+  .btn-blue{background:var(--blue);color:#fff;border-color:var(--blue-d)}.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+  .btn-cancel{background:var(--cancel);color:#444;border-color:#ddd}.btn-sm{font-size:12px;padding:4px 10px}
+  hr.s{border:none;border-top:1px solid #eef1f4;margin:16px 0}
+  .gf-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.gf-hd .t{font-size:15px;font-weight:600}
+  .chip{font-size:11px;padding:3px 10px;border-radius:20px;background:#eef1f5;color:#5b6b77;white-space:nowrap}
+  .chip.dirty{background:var(--amber-bg);color:var(--amber-tx)}.chip.busy{background:#d9edf7;color:#31708f}.chip.done{background:#dff0d8;color:#3c763d}
+  .seg{display:inline-flex;border:1px solid #d3dce3;border-radius:4px;overflow:hidden;flex-wrap:wrap;margin-bottom:8px}
+  .seg span{padding:6px 12px;font-size:12.5px;color:var(--blue);cursor:pointer;border-left:1px solid #d3dce3}
+  .seg span:first-child{border-left:none}.seg span.on{background:var(--blue);color:#fff}
+  .fld{margin-bottom:10px}
+  .fld .cap{font-size:12px;color:#5b6b77;margin-bottom:5px;display:flex;justify-content:space-between}
+  .opts{display:flex;flex-wrap:wrap;gap:5px;max-height:110px;overflow:auto;padding:2px}
+  .opt{font-size:12px;border:1px solid #d3dce3;border-radius:14px;padding:3px 10px;background:#fff;cursor:pointer;color:#4b5b66;white-space:nowrap}
+  .opt .c{color:#a3adb5;font-size:11px}
+  .opt.on{background:#eaf3f8;border-color:var(--blue);color:#20618a}
+  .opt.on .c{color:#6fa5c4}
+  .matchline{font-size:13px;margin:6px 0 12px;color:#31708f;background:#eaf3f8;border:1px solid #cfe3ef;border-radius:4px;padding:8px 11px}
+  .matchline b{font-weight:700}
+  .flags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .pill{font-size:11.5px;border:1px solid #d3dce3;border-radius:4px;padding:4px 9px;background:#fff;display:inline-flex;align-items:center;gap:5px}
+  .pill.warn{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx)}
+  .kf{display:none;align-items:center;gap:9px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:4px;padding:9px 11px;font-size:12px;color:var(--amber-tx);margin-bottom:12px}
+  .kf.show{display:flex}.kf .a{cursor:pointer;border:1px solid var(--amber-bd);border-radius:4px;padding:3px 9px;white-space:nowrap}
+  .note{background:#f4f6f8;border:1px solid #e3e8ee;border-radius:4px;padding:8px 11px;font-size:12px;color:#5b6b77;margin:6px 0 12px}
+  .sortline{display:flex;align-items:center;gap:8px;margin-bottom:10px}.sortline select{height:30px;border:1px solid var(--border);border-radius:3px;font-size:12px;padding:0 6px}
+  .ordsum{border:1px solid #d3dce3;border-radius:4px;padding:11px 12px;margin-bottom:10px}
+  .ordsum .row{display:flex;align-items:center;justify-content:space-between;font-size:13px}.ordsum .sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .setorder{margin-top:9px;width:100%;background:var(--blue);color:#fff;border:none;border-radius:5px;padding:8px;font-size:13px;cursor:pointer}
+  .footer{display:flex;gap:10px;margin-top:auto;padding-top:16px}.footer .btn{flex:1}
+  .pv-sec{margin-bottom:16px}.pv-sec .h{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px;font-weight:600;margin-bottom:8px}
+  .pv-sec .h .va{font-size:10px;background:#000;color:#cfd3dc;border-radius:4px;padding:2px 8px}
+  .pv-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .tile{aspect-ratio:3/4;border-radius:6px;background:#23242f;position:relative;overflow:hidden}
+  .tile .nm{position:absolute;left:0;right:0;bottom:0;font-size:8px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:8px 4px 3px;line-height:1.1;text-align:center}
+  .tabs{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 12px;font-size:11px;color:#9097a5}.tabs .tb{padding:4px 8px;border-radius:14px}.tabs .tb.on{background:#000;color:#fff}
+  .lw{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin-bottom:14px}.lw div{aspect-ratio:1/1.25;border-radius:5px;background:linear-gradient(135deg,#5a2a86,#2a1140)}
+  .pv-cap{color:#6b7280;font-size:12px;margin-top:6px}
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:center;justify-content:center;padding:20px}.ov.show{display:flex}
+  .modal{background:#fff;border-radius:6px;width:760px;max-width:100%;max-height:88vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .m-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #eef1f4}.m-hd .t{font-size:17px;font-weight:600}
+  .m-bd{padding:16px 18px}
+  .zone{display:flex;flex-direction:column;gap:6px}
+  .gr{display:flex;align-items:center;gap:9px;border:1px solid #e3e8ee;border-radius:5px;padding:7px 10px}.gr.pin{background:#f7fafc;border-color:#d3dce3}.gr.flag{border-color:#f0c987}
+  .thumb{width:26px;height:26px;border-radius:5px;flex:none}
+  .gn{font-size:13px}.gp{font-size:10.5px;color:var(--muted)}
+  .num{width:40px;height:28px;border:1px solid var(--border);border-radius:3px;text-align:center;font-size:12px;padding:2px}
+  .rate{width:52px;height:28px;border:1px solid var(--border);border-radius:3px;text-align:center;font-size:12px;padding:2px}
+  .lab{font-size:10.5px;color:var(--muted)}
+  .act{cursor:pointer;font-size:12px;border:1px solid #d3dce3;border-radius:4px;padding:3px 9px;color:#5b6b77;white-space:nowrap}.act.p{color:var(--blue);border-color:var(--blue)}
+  .saved{font-size:11px;color:var(--green);opacity:0;transition:opacity .2s}
+  .zt{font-size:13px;font-weight:600;margin:12px 0 6px}.zt small{color:var(--muted);font-weight:400}
+  .chip.err{background:#f8d7da;color:#a94442;border-color:#ebccd1;cursor:pointer}
+  .bulkbar{display:flex;gap:6px;align-items:center;margin:4px 0 6px;font-size:11.5px}
+  .bulkbar .bb{cursor:pointer;color:#3C8DBC;border:1px solid #cfdce5;border-radius:3px;padding:2px 8px;background:#f4f8fb}
+  .bulkbar .bb.danger{color:#c0392b;border-color:#e5cfcf;background:#fbf4f4}
+  .tagnew{font-size:9px;font-weight:700;color:#fff;background:#2EA447;border-radius:3px;padding:1px 4px;vertical-align:middle;margin-left:4px}
+  .morebtn{cursor:pointer;color:#3C8DBC;text-decoration:underline}
+  #mfilter .opts{overflow-y:auto}
+  .setorder[disabled]{opacity:.5;cursor:not-allowed}
+  .m-ft{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid #eef1f4}
+  .search{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:4px;padding:7px 10px;margin-bottom:12px}.search input{border:none;outline:none;flex:1;font-size:13px}
+  .toggle-man{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#5b6b77;margin-top:12px}
+  .databadge{font-size:10px;color:#7b8a95;background:#eef4f8;border:1px solid #d6e6f0;border-radius:12px;padding:2px 9px}
+</style>
+</head>
+<body class="skin-blue">
+  <div class="navbar">
+    <div class="logo">sw-demo-template71</div>
+    <div class="nav-r"><i class="fas fa-bars"></i><span class="sp"></span>
+      <span class="it"><span class="dot" style="background:#00a65a"></span>1 <span class="dot" style="background:#f39c12;margin-left:8px"></span>0</span>
+      <span class="it">3:37 PM (GMT 0)</span><span class="it">Eng</span><i class="fas fa-bell"></i><i class="fas fa-user-circle"></i><i class="fas fa-sign-out-alt"></i></div>
+  </div>
+  <aside class="sidebar">
+    <div class="si"><i class="fas fa-tachometer-alt lead"></i>Dashboard</div>
+    <div class="si"><i class="fas fa-list-ul lead"></i>Reports</div>
+    <div class="si"><i class="fas fa-exchange-alt lead"></i>Transactions</div>
+    <div class="si"><i class="fas fa-money-bill-wave lead"></i>Payments<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-users lead"></i>Players<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-dice lead"></i>Casino<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-sliders-h lead"></i>Providers Limits</div>
+    <div class="si"><i class="fas fa-futbol lead"></i>Sport<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-project-diagram lead"></i>Affiliate System<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-bullhorn lead"></i>Marketing<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-comments lead"></i>Players Chat<i class="fas fa-angle-left car"></i></div>
+    <div class="si"><i class="fas fa-cog lead"></i>Platform Settings<i class="fas fa-angle-left car"></i></div>
+    <div class="si on"><i class="fas fa-th-large lead"></i>CMS<i class="fas fa-angle-down car"></i></div>
+    <div class="sub"><div class="si">Menu Control</div><div class="si on">Personalized Categories</div><div class="si">Page Setup</div><div class="si">Translations</div></div>
+    <div class="si"><i class="fas fa-ticket-alt lead"></i>Tickets</div>
+    <div class="si"><i class="fas fa-gift lead"></i>Rewards</div>
+  </aside>
+
+  <div class="wrap">
+    <div class="ch">
+      <h1><span id="pagetitle">Add Custom Slider</span> <i class="fas fa-info-circle i"></i></h1>
+      <div class="crumb"><span class="databadge"><i class="fas fa-database"></i> live platform data · <span id="totalgames"></span> games</span> &nbsp; Personalized Categories <i class="fas fa-angle-right" style="font-size:11px"></i> <span id="crumbtitle">Add Custom Slider</span> &nbsp; <span id="demoswitch" style="cursor:pointer;color:#3C8DBC;font-size:11.5px;border:1px dashed #9fc4da;border-radius:3px;padding:1px 6px"></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="bc"><i class="fas fa-th" style="color:#7b8a95"></i> Edit Page <span class="sep">›</span> <span class="dim">Casino Lobby</span> <span class="sep">›</span> Custom Slider</div>
+        <div class="pv-ctl"><span class="zoom">100% <i class="fas fa-angle-down" style="font-size:10px;margin-left:4px"></i></span>
+          <span class="dev on"><i class="fas fa-desktop"></i></span><span class="dev"><i class="fas fa-mobile-alt"></i></span><span class="dev"><i class="fas fa-th-large"></i></span></div>
+      </div>
+      <div class="cols">
+        <div class="left">
+          <div class="sect-t">Settings</div>
+          <div class="langtabs"><span class="on">En</span><span>Ru</span><span>Es</span><span>He</span><span>Pt</span><span>Fr</span></div>
+          <label class="lbl">Slider Name <span class="req">*</span></label>
+          <input class="fc" id="sname" placeholder="Enter Slider Name" value="Top Slots">
+          <div style="margin-top:12px"><label class="lbl">Slug <span class="req">*</span></label>
+            <input class="fc" value="https://sw-template71-demo.nuxgame.site/casino/top-slots" disabled>
+            <label class="ck"><input type="checkbox" checked> Auto-generate from title</label></div>
+          <div style="margin-top:12px"><label class="lbl">Slider icon <span class="req">*</span></label>
+            <button class="filebtn"><i class="fas fa-paperclip"></i> Add/Edit Files</button></div>
+          <hr class="s">
+          <div class="sect-t" style="font-size:14px">Tags Builder</div>
+          <label class="lbl">Tags Name</label>
+          <div class="tagrow"><input class="fc" placeholder="# e.g. Trending"><div class="swatch"></div><button class="btn btn-blue btn-sm" style="white-space:nowrap"><i class="fas fa-plus"></i> Add Tag</button></div>
+          <hr class="s">
+
+          <!-- GAMES FILTER (data-driven) -->
+          <div id="histpanel" style="display:none"></div>
+          <div class="gf-hd"><span class="t">Games Filter <span class="req">*</span></span><span><span class="chip" id="chip">Not saved yet</span><a id="viewlive" href="#" onclick="return false" style="display:none;font-size:11.5px;margin-left:8px;color:#3C8DBC">View on site <i class="fas fa-external-link-alt" style="font-size:9px"></i></a></span></div>
+          <div style="font-size:12.5px;color:#5b6b77;margin-bottom:6px">What goes in this slider?</div>
+          <div class="seg" id="scope">
+            <span data-s="all">All games</span><span data-s="type">By type</span><span data-s="category">By category</span><span data-s="specific">Specific games</span>
+          </div>
+          <div id="scopearea"></div>
+          <div class="lab" style="margin:2px 0 8px">Or copy the setup of an existing slider:
+            <select id="copysel" style="font-size:12px;padding:2px 6px;border:1px solid #d2d6de;border-radius:3px;color:#555">
+              <option value="">Choose a slider…</option>
+              <option value="top">Top Slots (32,418 games · auto)</option>
+              <option value="summer">Summer Hits (48 games · manual)</option>
+              <option value="prag">Pragmatic Push (2,349 games · auto)</option>
+            </select>
+          </div>
+
+          <div class="fld"><div class="cap"><span>Narrow by provider (optional)</span><span id="provsel" class="lab"></span></div><div class="opts" id="provopts"></div></div>
+
+          <div class="matchline" id="matchline"></div>
+          <div class="flags" id="flags"></div>
+          <div class="kf" id="kf"><i class="fas fa-exclamation-triangle"></i><div style="flex:1" id="kftext"></div><span class="a" onclick="keepFlagged()">Keep them in (always include)</span><span class="a" onclick="removeFlagged()">Remove</span></div>
+          <div class="note"><i class="fas fa-info-circle"></i> Changing a filter never deletes your games. <b>Pin &amp; order</b> affect this slider only; <b>your rating</b> changes the game across your whole casino.</div>
+
+          <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Sort the rest by</label>
+            <select id="sort"><option value="site">Your rating (unrated fall back to Global)</option><option value="global">Global rating (all brands)</option><option value="newest">Newest releases first</option></select></div>
+          <div class="ordsum"><div class="row"><span style="font-weight:600">Game order</span><span class="lab" id="ordright"></span></div>
+            <div class="sub" id="ordsub"></div><button class="setorder" onclick="openModal()"><i class="fas fa-sliders-h"></i> Set game order</button></div>
+
+          <div class="footer"><button class="btn btn-cancel">Cancel</button><button class="btn btn-green" id="apply">Apply Changes</button></div>
+        </div>
+
+        <div class="right">
+          <div class="pv-sec"><div class="h"><span id="pvname">Top Slots</span><span class="va">View all</span></div>
+            <div class="pv-row" id="pvrow"></div><div class="pv-cap" id="pvcap"></div></div>
+          <div class="pv-sec"><div class="h" style="font-size:12px"><span><i class="fas fa-trophy" style="color:#f0b429"></i> Live Wins</span></div><div class="lw" id="lw"></div></div>
+          <div class="tabs"><span class="tb on">Casino</span><span class="tb">Wins News</span><span class="tb">Live Games</span><span class="tb">Crash</span><span class="tb">Scratch</span><span class="tb">Fruits</span><span class="tb">Big Catch</span><span class="tb">Megaways</span></div>
+          <div class="pv-sec"><div class="h" style="font-size:13px"><span>Live Games</span><span class="va">View all</span></div>
+            <div class="pv-row">
+              <div class="tile" style="background:linear-gradient(135deg,#7a1f2b,#3a0d12)"></div><div class="tile" style="background:linear-gradient(135deg,#c26a00,#5a2f00)"></div><div class="tile" style="background:linear-gradient(135deg,#3a1c5a,#160a26)"></div><div class="tile" style="background:linear-gradient(135deg,#5a1f7a,#260a3a)"></div><div class="tile" style="background:linear-gradient(135deg,#1f4a7a,#0a1f3a)"></div><div class="tile" style="background:linear-gradient(135deg,#0f6e56,#053026)"></div><div class="tile" style="background:linear-gradient(135deg,#7a1f4a,#3a0a26)"></div>
+            </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov" id="ov"><div class="modal">
+    <div class="m-hd"><span class="t" id="mtitle">Set game order</span><span id="msync" style="margin-left:10px"></span><i class="fas fa-times" title="Close and discard changes made in this window" style="cursor:pointer;color:#8895a0" onclick="closeModal()"></i></div>
+    <div class="m-bd">
+      <div class="note" style="margin-top:0"><i class="fas fa-info-circle"></i> Pin your featured games on top; the rest fill in automatically by your rating. Editing a game's rating changes it across your whole casino.</div>
+      <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Sort the rest by</label>
+        <select id="msort"><option value="site">Your rating (unrated fall back to Global)</option><option value="global">Global rating (all brands)</option><option value="newest">Newest releases first</option></select>
+        <span class="help" id="msorthint" style="margin-top:0">Uses the rating you set per game.</span></div>
+      <div id="mratechg" class="help" style="display:none"></div>
+      <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="msearch" placeholder="Search games by name"></div>
+      <div id="mfilter" style="margin-bottom:12px"></div>
+      <div class="zt">Pinned <small id="mpc"></small></div><div class="zone" id="mpinned"></div>
+      <div class="zt">Auto-filled <small id="mtc"></small></div><div class="zone" id="mtail"></div>
+      <div id="mnores" class="help" style="display:none">No games match that name. Try a different one.</div>
+      <div id="mmore" class="help" style="display:none"></div>
+      <div id="mexcsec" style="display:none"><div class="zt">Excluded <small id="mexc"></small></div><div class="zone" id="mexcluded"></div></div>
+      <div id="pinallwrap" style="margin-top:8px"></div>
+    </div>
+    <div class="m-ft"><span class="lab" id="mftlab">Pin a short highlight list; the tail sorts itself.</span>
+      <div><button class="btn btn-cancel" onclick="closeModal()">Cancel</button> <button class="btn btn-blue" onclick="saveOrder()">Apply order</button></div></div>
+  </div></div>
+  <div id="toast" style="display:none;position:fixed;bottom:18px;right:18px;background:#2c3e50;color:#fff;padding:10px 14px;border-radius:6px;font-size:12.5px;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3)"></div>
+
+<script>
+const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"name":"Red Tiger Gaming","count":1483},{"name":"Evolution","count":1390},{"name":"Yggdrasil Gaming","count":1384},{"name":"Pragmatic Play Live","count":1257},{"name":"Pragmatic","count":1153},{"name":"Spinomenal","count":1134},{"name":"KA Gaming","count":992},{"name":"Hacksaw Gaming","count":848},{"name":"Play'n GO","count":800},{"name":"NETENT","count":798},{"name":"PG Soft","count":704},{"name":"Fazi Interactive","count":544},{"name":"BGaming","count":537},{"name":"Evoplay","count":513},{"name":"Playtech","count":498}],"categories":[{"name":"Reels Slots","count":25046},{"name":"Progressive Slots","count":5096},{"name":"Black Jack","count":3099},{"name":"Roulette","count":1174},{"name":"Baccarat","count":1122},{"name":"Megaways Slots","count":1093},{"name":"Fruit Slots","count":827},{"name":"Arcade","count":580},{"name":"Crash Game","count":378},{"name":"Dice slots","count":356},{"name":"Scratch Cards","count":323},{"name":"Card Game","count":296},{"name":"Show Games","count":283},{"name":"Fishing Game","count":201},{"name":"Video Poker","count":187},{"name":"Bingo","count":124},{"name":"Plinko","count":111},{"name":"Poker","count":95},{"name":"Sic Bo","count":90},{"name":"Dice","count":80}],"games":[{"id":1000917,"name":"Joker's Jewels","soft":"Pragmatic Play","category":"Reels Slots","pop":1883125,"rtp":96.5,"rating":0},{"id":1000834,"name":"Gates of Olympus","soft":"Pragmatic Play","category":"Reels Slots","pop":1456767,"rtp":96.5,"rating":0},{"id":1028095,"name":"Gates of Olympus 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":1072232,"rtp":96.4,"rating":0},{"id":1007440,"name":"Big Bass Splash","soft":"Pragmatic Play","category":"Reels Slots","pop":1048970,"rtp":96.71,"rating":0},{"id":1001846,"name":"5 Lions Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":910252,"rtp":96.5,"rating":0},{"id":1000825,"name":"Big Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":849588,"rtp":96.71,"rating":0},{"id":1027123,"name":"Big Bass Halloween","soft":"Pragmatic Play","category":"Reels Slots","pop":729361,"rtp":96.04,"rating":0},{"id":1007466,"name":"Sugar Rush","soft":"Pragmatic Play","category":"Reels Slots","pop":686702,"rtp":96.5,"rating":0},{"id":1029367,"name":"Sugar Rush 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":660241,"rtp":96.5,"rating":0},{"id":1000891,"name":"Sweet Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":639998,"rtp":96.49,"rating":0},{"id":1030943,"name":"Sweet Bonanza 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":603832,"rtp":96.53,"rating":0},{"id":1006434,"name":"Gold Party","soft":"Pragmatic Play","category":"Reels Slots","pop":500880,"rtp":96.5,"rating":0},{"id":1000839,"name":"Madame Destiny Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":495664,"rtp":96.56,"rating":0},{"id":1013896,"name":"Cosmic Cash","soft":"Pragmatic Play","category":"Progressive Slots","pop":425880,"rtp":96.56,"rating":0},{"id":1023026,"name":"Big Bass Amazon Xtreme","soft":"Pragmatic Play","category":"Reels Slots","pop":420620,"rtp":96.07,"rating":0},{"id":1021117,"name":"Rabbit Garden","soft":"Pragmatic Play","category":"Reels Slots","pop":411251,"rtp":96.05,"rating":0},{"id":1006146,"name":"Christmas Big Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":410073,"rtp":96.71,"rating":0},{"id":1000812,"name":"Roulette 1 - Azure","soft":"Pragmatic Play Live","category":"Roulette","pop":409378,"rtp":97.3,"rating":0},{"id":1000874,"name":"Master Joker","soft":"Pragmatic Play","category":"Reels Slots","pop":407310,"rtp":96.51,"rating":0},{"id":1019330,"name":"PIZZA PIZZA PIZZA","soft":"Pragmatic Play","category":"Reels Slots","pop":387393,"rtp":96.04,"rating":0},{"id":1030258,"name":"Big Bass - Secrets of the Golden Lake","soft":"Pragmatic Play","category":"Reels Slots","pop":384400,"rtp":96.07,"rating":0},{"id":1073533,"name":"Lord of the Keys","soft":"Platipus Gaming","category":"Progressive Slots","pop":346725,"rtp":95.1,"rating":0},{"id":1000828,"name":"Congo Cash","soft":"Pragmatic Play","category":"Progressive Slots","pop":337720,"rtp":96.51,"rating":0},{"id":1022769,"name":"Zeus vs Hades - Gods of War","soft":"Pragmatic Play","category":"Reels Slots","pop":335576,"rtp":96.07,"rating":0},{"id":1024348,"name":"Roleta Brasileira","soft":"Playtech","category":"Roulette","pop":330411,"rtp":97.31,"rating":0},{"id":1027873,"name":"Big Bass Christmas Bash","soft":"Pragmatic Play","category":"Reels Slots","pop":304674,"rtp":96.71,"rating":0},{"id":1000865,"name":"Great Rhino Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":287785,"rtp":96.57,"rating":0},{"id":1006007,"name":"Book of Egypt","soft":"Platipus Gaming","category":"Reels Slots","pop":278240,"rtp":94.98,"rating":0},{"id":1004362,"name":"Bigger Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":276829,"rtp":96.71,"rating":0},{"id":1004645,"name":"Starlight Princess","soft":"Pragmatic Play","category":"Reels Slots","pop":274045,"rtp":96.5,"rating":0},{"id":1000937,"name":"Diamond Strike","soft":"Pragmatic Play","category":"Progressive Slots","pop":270902,"rtp":96.96,"rating":0},{"id":1020373,"name":"Club Tropicana","soft":"Pragmatic Play","category":"Reels Slots","pop":263019,"rtp":96.08,"rating":0},{"id":1027315,"name":"Starlight Princess 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":262426,"rtp":96.5,"rating":0},{"id":1035405,"name":"Big Bass Vegas Double Down Deluxe","soft":"Pragmatic Play","category":"Reels Slots","pop":260650,"rtp":96.5,"rating":0},{"id":1000815,"name":"Mega Roulette","soft":"Pragmatic Play Live","category":"Roulette","pop":246592,"rtp":96.51,"rating":0},{"id":1000924,"name":"Chilli Heat","soft":"Pragmatic Play","category":"Progressive Slots","pop":240058,"rtp":96.52,"rating":0},{"id":1018068,"name":"Big Bass Bonanza - Keeping it Reel","soft":"Pragmatic Play","category":"Reels Slots","pop":237327,"rtp":94.07,"rating":0},{"id":1001511,"name":"Buffalo King Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":235644,"rtp":96.52,"rating":0},{"id":1001049,"name":"Floating Dragon","soft":"Pragmatic Play","category":"Reels Slots","pop":232896,"rtp":96.71,"rating":0},{"id":1050203,"name":"Gates of Olympus Super Scatter","soft":"Pragmatic Play","category":"Reels Slots","pop":232300,"rtp":96.5,"rating":0},{"id":1022268,"name":"Little Witchy","soft":"Platipus Gaming","category":"Reels Slots","pop":223567,"rtp":95.03,"rating":0},{"id":1045650,"name":"The Biggest Win X50","soft":"Mascot Gaming","category":"Reels Slots","pop":222397,"rtp":91.74,"rating":0},{"id":1021157,"name":"Big Bass - Hold & Spinner","soft":"Pragmatic Play","category":"Reels Slots","pop":217706,"rtp":96.07,"rating":0},{"id":1028975,"name":"Big Bass Floats my Boat","soft":"Pragmatic Play","category":"Reels Slots","pop":199743,"rtp":96.07,"rating":0},{"id":1019135,"name":"Bigger Bass Blizzard - Christmas Catch","soft":"Pragmatic Play","category":"Reels Slots","pop":188244,"rtp":96.08,"rating":0},{"id":1007342,"name":"Cleocatra","soft":"Pragmatic Play","category":"Reels Slots","pop":178694,"rtp":96.2,"rating":0},{"id":1000853,"name":"The Dog House Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":178250,"rtp":96.55,"rating":0},{"id":1000896,"name":"The Dog House","soft":"Pragmatic Play","category":"Reels Slots","pop":176976,"rtp":96.51,"rating":0},{"id":1076421,"name":"Chicken Road 2","soft":"InOut","category":"Crash Game","pop":174679,"rtp":95.5,"rating":0},{"id":1000827,"name":"Christmas Carol Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":164293,"rtp":96.58,"rating":0},{"id":1005310,"name":"Big Juan","soft":"Pragmatic Play","category":"Progressive Slots","pop":164210,"rtp":96.7,"rating":0},{"id":1000902,"name":"Mustang Gold","soft":"Pragmatic Play","category":"Progressive Slots","pop":159921,"rtp":96.53,"rating":0},{"id":1005340,"name":"Bonus Mania","soft":"KA Gaming","category":"Reels Slots","pop":159088,"rtp":96.0,"rating":0},{"id":1000821,"name":"Lobby Blackjack","soft":"Pragmatic Play Live","category":"Black Jack","pop":156823,"rtp":99.59,"rating":0},{"id":1030767,"name":"Aviator","soft":"Spribe","category":"Crash Game","pop":155039,"rtp":97.0,"rating":0},{"id":1031906,"name":"Big Bass Mission Fishin'","soft":"Pragmatic Play","category":"Reels Slots","pop":155017,"rtp":96.5,"rating":0},{"id":1000868,"name":"Wild West Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":154580,"rtp":96.51,"rating":0},{"id":1027929,"name":"Sugar Rush Xmas","soft":"Pragmatic Play","category":"Reels Slots","pop":152961,"rtp":96.5,"rating":0},{"id":1023054,"name":"Wisdom of Athena","soft":"Pragmatic Play","category":"Reels Slots","pop":150685,"rtp":96.07,"rating":0},{"id":1036862,"name":"Big Bass Halloween 2","soft":"Pragmatic Play","category":"Reels Slots","pop":147111,"rtp":96.71,"rating":0},{"id":1007348,"name":"Wild West Gold Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":144493,"rtp":96.44,"rating":0},{"id":1004998,"name":"Zeus the Thunderer","soft":"Mascot Gaming","category":"Reels Slots","pop":140000,"rtp":95.3,"rating":0},{"id":1020386,"name":"Wild Wild Riches Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":138291,"rtp":96.02,"rating":0},{"id":1000835,"name":"Gems Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":136590,"rtp":96.65,"rating":0},{"id":1034850,"name":"Royalty Of Olympus","soft":"Barbara Bang","category":"Reels Slots","pop":134903,"rtp":96.0,"rating":0},{"id":1005944,"name":"Sweet Bonanza CandyLand","soft":"Pragmatic Play Live","category":"Show Games","pop":134643,"rtp":96.51,"rating":0},{"id":1006935,"name":"Queenie","soft":"Pragmatic Play","category":"Progressive Slots","pop":133904,"rtp":96.51,"rating":0},{"id":1004999,"name":"Fruits of Luxor","soft":"Mascot Gaming","category":"Fruit Slots","pop":130759,"rtp":95.0,"rating":0},{"id":1073523,"name":"Coin Blaze","soft":"Platipus Gaming","category":"Progressive Slots","pop":128232,"rtp":96.07,"rating":0},{"id":1000988,"name":"Sweet Bonanza Xmas","soft":"Pragmatic Play","category":"Reels Slots","pop":127818,"rtp":96.49,"rating":0},{"id":1005066,"name":"BlackJack Lucky Sevens","soft":"Evoplay","category":"Black Jack","pop":125575,"rtp":99.6,"rating":0},{"id":1024852,"name":"Treasures of Aztec","soft":"PG Soft","category":"Reels Slots","pop":125250,"rtp":96.71,"rating":0},{"id":1000845,"name":"The Hand of Midas","soft":"Pragmatic Play","category":"Reels Slots","pop":123528,"rtp":96.54,"rating":0},{"id":1004970,"name":"Anksunamun: the Queen of Egypt","soft":"Mascot Gaming","category":"Reels Slots","pop":120620,"rtp":96.6,"rating":0},{"id":1030855,"name":"Big Bass Bonanza - Reel Action","soft":"Pragmatic Play","category":"Reels Slots","pop":117568,"rtp":96.5,"rating":0},{"id":1029712,"name":"Wanted: Dead or a Wild","soft":"Hacksaw Gaming","category":"Reels Slots","pop":116928,"rtp":96.38,"rating":0},{"id":1041878,"name":"Spicy Candies Rockblocks","soft":"Mascot Gaming","category":"Reels Slots","pop":116492,"rtp":95.13,"rating":0},{"id":1020450,"name":"The Dog House Multihold","soft":"Pragmatic Play","category":"Reels Slots","pop":116450,"rtp":96.06,"rating":0},{"id":1000811,"name":"Auto-Roulette 1","soft":"Pragmatic Play Live","category":"Roulette","pop":115386,"rtp":97.3,"rating":0},{"id":1038520,"name":"Gates of Olympus Xmas 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":112205,"rtp":96.5,"rating":0},{"id":1001047,"name":"Power of Thor Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":110489,"rtp":96.97,"rating":0},{"id":1024866,"name":"Wild Bounty Showdown","soft":"PG Soft","category":"Reels Slots","pop":107649,"rtp":96.75,"rating":0},{"id":1000848,"name":"Wild Wild Riches","soft":"Pragmatic Play","category":"Progressive Slots","pop":105870,"rtp":96.0,"rating":0},{"id":1037734,"name":"Big Bass Xmas Xtreme","soft":"Pragmatic Play","category":"Reels Slots","pop":101221,"rtp":96.07,"rating":0},{"id":1024771,"name":"Fortune Tiger","soft":"PG Soft","category":"Reels Slots","pop":98740,"rtp":96.81,"rating":0},{"id":1063595,"name":"Golden Wealth Baccarat","soft":"Evolution","category":"Baccarat","pop":98141,"rtp":98.85,"rating":0},{"id":1001227,"name":"Hot Fiesta","soft":"Pragmatic Play","category":"Reels Slots","pop":98067,"rtp":96.5,"rating":0},{"id":1000916,"name":"Great Rhino","soft":"Pragmatic Play","category":"Reels Slots","pop":96832,"rtp":96.53,"rating":0},{"id":1000819,"name":"Game Shows","soft":"Pragmatic Play Live","category":"Show Games","pop":95918,"rtp":96.51,"rating":0},{"id":1018166,"name":"Release the Kraken 2","soft":"Pragmatic Play","category":"Reels Slots","pop":95152,"rtp":96.03,"rating":0},{"id":1019157,"name":"Fury of Odin Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":94076,"rtp":95.97,"rating":0},{"id":1019264,"name":"Inner Fire","soft":"Evoplay","category":"Reels Slots","pop":93431,"rtp":96.01,"rating":0},{"id":1029269,"name":"Big Bass Day at the Races","soft":"Pragmatic Play","category":"Reels Slots","pop":93024,"rtp":96.07,"rating":0},{"id":1000949,"name":"Wolf Gold","soft":"Pragmatic Play","category":"Progressive Slots","pop":92591,"rtp":96.0,"rating":0},{"id":1000881,"name":"Tree of Riches","soft":"Pragmatic Play","category":"Reels Slots","pop":90330,"rtp":96.45,"rating":0},{"id":1036178,"name":"Wisdom of Athena 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":88704,"rtp":96.0,"rating":0},{"id":1001006,"name":"Juicy Fruits","soft":"Pragmatic Play","category":"Fruit Slots","pop":87405,"rtp":96.51,"rating":0},{"id":1020073,"name":"Fish Eye","soft":"Pragmatic Play","category":"Reels Slots","pop":86680,"rtp":96.07,"rating":0},{"id":1029087,"name":"Pompeii Megareels Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":86092,"rtp":96.0,"rating":0},{"id":1002816,"name":"JetX","soft":"SmartSoft Gaming","category":"Crash Game","pop":84807,"rtp":97.0,"rating":0},{"id":1020024,"name":"Dragon Hero","soft":"Pragmatic Play","category":"Reels Slots","pop":84305,"rtp":96.0,"rating":0},{"id":1000920,"name":"Aztec Gems","soft":"Pragmatic Play","category":"Reels Slots","pop":84003,"rtp":96.52,"rating":0},{"id":1004985,"name":"Gemz Grow","soft":"Mascot Gaming","category":"Reels Slots","pop":82750,"rtp":96.7,"rating":0},{"id":1027720,"name":"3 Hot Chillies","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":82417,"rtp":95.59,"rating":0},{"id":1007256,"name":"Clover Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":81957,"rtp":96.54,"rating":0},{"id":1043602,"name":"Golden Wealth Baccarat","soft":"Evolution Gaming","category":"Baccarat","pop":81567,"rtp":98.85,"rating":0},{"id":1036532,"name":"Chests of Cai Shen","soft":"Pragmatic Play","category":"Progressive Slots","pop":80378,"rtp":96.47,"rating":0},{"id":1021228,"name":"Mayan Cache","soft":"RubyPlay","category":"Progressive Slots","pop":79052,"rtp":96.47,"rating":0},{"id":1045684,"name":"Peppe's Pepperoni Pizza Plaza","soft":"Pragmatic Play","category":"Reels Slots","pop":78902,"rtp":96.55,"rating":0},{"id":1025397,"name":"Mustang Trail","soft":"Pragmatic Play","category":"Reels Slots","pop":78036,"rtp":96.04,"rating":0},{"id":1038716,"name":"Big Bass Bonanza 3 Reeler","soft":"Pragmatic Play","category":"Reels Slots","pop":77680,"rtp":96.5,"rating":0},{"id":1077146,"name":"Scratch the Bank","soft":"Mascot Gaming","category":"Reels Slots","pop":76239,"rtp":91.82,"rating":0},{"id":1045871,"name":"5 Lions Megaways 2","soft":"Pragmatic Play","category":"Megaways Slots","pop":76135,"rtp":96.5,"rating":0},{"id":1007363,"name":"Zombie Carnival","soft":"Pragmatic Play","category":"Reels Slots","pop":75543,"rtp":96.5,"rating":0},{"id":1050124,"name":"Big Bass Bonanza 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":75378,"rtp":96.51,"rating":0},{"id":1000892,"name":"5 Lions Gold","soft":"Pragmatic Play","category":"Progressive Slots","pop":74438,"rtp":96.5,"rating":0},{"id":1000801,"name":"Baccarat 5","soft":"Pragmatic Play Live","category":"Baccarat","pop":73128,"rtp":98.94,"rating":0},{"id":1007025,"name":"Spaceman","soft":"Pragmatic Play","category":"Crash Game","pop":72372,"rtp":96.5,"rating":0},{"id":1022275,"name":"Ways of the Gauls","soft":"Platipus Gaming","category":"Reels Slots","pop":72343,"rtp":95.03,"rating":0},{"id":1026012,"name":"Big Bass Crash","soft":"Pragmatic Play","category":"Crash Game","pop":71994,"rtp":96.71,"rating":0},{"id":1024770,"name":"Fortune Rabbit","soft":"PG Soft","category":"Reels Slots","pop":71471,"rtp":96.75,"rating":0},{"id":1025347,"name":"Forge of Olympus","soft":"Pragmatic Play","category":"Reels Slots","pop":70347,"rtp":96.25,"rating":0},{"id":1043723,"name":"Bigger Bass Splash","soft":"Pragmatic Play","category":"Reels Slots","pop":69584,"rtp":96.5,"rating":0},{"id":1005210,"name":"BlackJack","soft":"GameArt","category":"Black Jack","pop":69264,"rtp":99.37,"rating":0},{"id":1023489,"name":"Joker's Jewels Dice","soft":"Pragmatic Play","category":"Dice slots","pop":68208,"rtp":96.5,"rating":0},{"id":1027740,"name":"Coin Volcano","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":65793,"rtp":95.67,"rating":0},{"id":1029935,"name":"Le Bandit","soft":"Hacksaw Gaming","category":"Reels Slots","pop":65769,"rtp":96.34,"rating":0},{"id":1031162,"name":"Hot Fruit x15","soft":"Mascot Gaming","category":"Reels Slots","pop":65302,"rtp":95.15,"rating":0},{"id":1025764,"name":"Candy Blitz","soft":"Pragmatic Play","category":"Reels Slots","pop":64425,"rtp":96.08,"rating":0},{"id":1000862,"name":"Fruit Party","soft":"Pragmatic Play","category":"Fruit Slots","pop":64331,"rtp":96.47,"rating":0},{"id":1024876,"name":"Cocktail Nights","soft":"PG Soft","category":"Reels Slots","pop":63946,"rtp":96.75,"rating":0},{"id":1019130,"name":"Santa's Great Gifts","soft":"Pragmatic Play","category":"Reels Slots","pop":63147,"rtp":96.25,"rating":0},{"id":1017961,"name":"Muertos Multiplier Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":63114,"rtp":96.03,"rating":0},{"id":1020069,"name":"Mammoth Gold Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":62965,"rtp":96.03,"rating":0},{"id":1034750,"name":"Deep Sea Destruction","soft":"Urgent Games","category":"Arcade","pop":62944,"rtp":80.0,"rating":0},{"id":1024769,"name":"Fortune Ox","soft":"PG Soft","category":"Reels Slots","pop":62846,"rtp":96.75,"rating":0},{"id":1004971,"name":"Lions Pride","soft":"Mascot Gaming","category":"Reels Slots","pop":62218,"rtp":97.1,"rating":0},{"id":1045814,"name":"Big Bass Return to the Races","soft":"Pragmatic Play","category":"Reels Slots","pop":60981,"rtp":96.07,"rating":0},{"id":1076512,"name":"LUCKY FRUITY COIN","soft":"Mascot Gaming","category":"Reels Slots","pop":58603,"rtp":95.18,"rating":0},{"id":1029303,"name":"Coin Up: Hot Fire","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":58360,"rtp":95.75,"rating":0},{"id":1048343,"name":"Zeus The Invincible","soft":"Mascot Gaming","category":"Reels Slots","pop":58070,"rtp":91.71,"rating":0},{"id":1087992,"name":"Sugar Rush Super Scatter","soft":"Pragmatic Play","category":"Reels Slots","pop":56957,"rtp":96.58,"rating":0},{"id":1001850,"name":"Heart of Rio","soft":"Pragmatic Play","category":"Reels Slots","pop":56735,"rtp":96.5,"rating":0},{"id":1028058,"name":"Fire Stampede","soft":"Pragmatic Play","category":"Progressive Slots","pop":56619,"rtp":96.0,"rating":0},{"id":1063417,"name":"Big Bass Boxing Bonus Round","soft":"Pragmatic Play","category":"Reels Slots","pop":56219,"rtp":96.5,"rating":0},{"id":1029937,"name":"Le Bandit","soft":"Hacksaw Gaming","category":"Reels Slots","pop":55910,"rtp":92.17,"rating":0},{"id":1005727,"name":"Big Bass Bonanza Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":55884,"rtp":96.7,"rating":0},{"id":1017962,"name":"PowerUp Roulette","soft":"Pragmatic Play Live","category":"Roulette","pop":55578,"rtp":97.3,"rating":0},{"id":1000658,"name":"Koi Gate","soft":"Habanero","category":"Reels Slots","pop":55339,"rtp":96.0,"rating":0},{"id":1021266,"name":"Zeus Rush Fever Deluxe","soft":"RubyPlay","category":"Progressive Slots","pop":55191,"rtp":96.56,"rating":0},{"id":1005308,"name":"Mine Mine Quest","soft":"Tom Horn Gaming","category":"Reels Slots","pop":54584,"rtp":95.41,"rating":0},{"id":1000833,"name":"Eye of the Storm","soft":"Pragmatic Play","category":"Reels Slots","pop":53882,"rtp":96.71,"rating":0},{"id":1022907,"name":"Floating Dragon - Dragon Boat Festival","soft":"Pragmatic Play","category":"Reels Slots","pop":53875,"rtp":96.07,"rating":0},{"id":1016359,"name":"Black Bull","soft":"Pragmatic Play","category":"Reels Slots","pop":53653,"rtp":96.51,"rating":0},{"id":1020440,"name":"Aviator","soft":"Spribe","category":"Crash Game","pop":53604,"rtp":97.0,"rating":0},{"id":1042677,"name":"Brick House Bonanza","soft":"Pragmatic Play","category":"Progressive Slots","pop":51877,"rtp":96.5,"rating":0},{"id":1089538,"name":"MegaBlock","soft":"InOut","category":"Crash Game","pop":51861,"rtp":95.5,"rating":0},{"id":1000882,"name":"John Hunter and the Tomb of the Scarab Queen","soft":"Pragmatic Play","category":"Reels Slots","pop":51362,"rtp":96.5,"rating":0},{"id":1019915,"name":"Starlight Christmas","soft":"Pragmatic Play","category":"Reels Slots","pop":51338,"rtp":96.5,"rating":0},{"id":1001512,"name":"Dragon Tiger","soft":"Pragmatic Play Live","category":"Card Game","pop":51298,"rtp":96.27,"rating":0},{"id":1002528,"name":"Super 7 Stars","soft":"Red Rake Gaming","category":"Reels Slots","pop":50828,"rtp":95.9,"rating":0},{"id":1032611,"name":"Joker's Jewels Wild","soft":"Pragmatic Play","category":"Reels Slots","pop":50630,"rtp":96.5,"rating":0},{"id":1029390,"name":"Fire Portals","soft":"Pragmatic Play","category":"Reels Slots","pop":50131,"rtp":96.06,"rating":0},{"id":1021257,"name":"Volcano Rising","soft":"RubyPlay","category":"Progressive Slots","pop":49592,"rtp":96.46,"rating":0},{"id":1076343,"name":"Big Bass Reel Repeat","soft":"Pragmatic Play","category":"Reels Slots","pop":49494,"rtp":96.51,"rating":0},{"id":1000944,"name":"888 Dragons","soft":"Pragmatic Play","category":"Reels Slots","pop":48873,"rtp":96.84,"rating":0},{"id":1038787,"name":"Space Gems Rockblocks","soft":"Mascot Gaming","category":"Reels Slots","pop":48755,"rtp":91.82,"rating":0},{"id":1021269,"name":"Diamond Explosion 7s","soft":"RubyPlay","category":"Progressive Slots","pop":48688,"rtp":96.82,"rating":0},{"id":1023385,"name":"3 Buzzing Wilds","soft":"Pragmatic Play","category":"Reels Slots","pop":48171,"rtp":96.03,"rating":0},{"id":1000813,"name":"Speed Baccarat 3","soft":"Pragmatic Play Live","category":"Baccarat","pop":48141,"rtp":97.3,"rating":0},{"id":1000810,"name":"Mega Wheel","soft":"Pragmatic Play Live","category":"Show Games","pop":48033,"rtp":96.51,"rating":0},{"id":1027451,"name":"Sugar Supreme Powernudge","soft":"Pragmatic Play","category":"Reels Slots","pop":47574,"rtp":96.09,"rating":0},{"id":1020357,"name":"3x Monkeys","soft":"KA Gaming","category":"Reels Slots","pop":47516,"rtp":96.0,"rating":0},{"id":1006029,"name":"Jewel Bang","soft":"Platipus Gaming","category":"Reels Slots","pop":47460,"rtp":94.98,"rating":0},{"id":1035043,"name":"Riot Ultimate","soft":"Mascot Gaming","category":"Reels Slots","pop":47240,"rtp":95.0,"rating":0},{"id":1020495,"name":"Crash X","soft":"Turbo Games","category":"Crash Game","pop":46677,"rtp":95.0,"rating":0},{"id":1038555,"name":"Tiny Toads","soft":"Pragmatic Play","category":"Progressive Slots","pop":45537,"rtp":96.51,"rating":0},{"id":1080431,"name":"Sweet Rush Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":45369,"rtp":96.5,"rating":0},{"id":1085856,"name":"Big Bass Splash 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":45014,"rtp":96.52,"rating":0},{"id":1023490,"name":"Sweet Bonanza Dice","soft":"Pragmatic Play","category":"Dice slots","pop":44699,"rtp":96.49,"rating":0},{"id":1023005,"name":"40 Flaming Lines","soft":"ZeusPlay","category":"Reels Slots","pop":44649,"rtp":96.5,"rating":0},{"id":1006041,"name":"Santa's Wonderland","soft":"Pragmatic Play","category":"Reels Slots","pop":44229,"rtp":96.23,"rating":0},{"id":1035856,"name":"Fruit Vegas Extreme x125","soft":"Mascot Gaming","category":"Reels Slots","pop":43884,"rtp":94.5,"rating":0},{"id":1005728,"name":"Super X","soft":"Pragmatic Play","category":"Reels Slots","pop":43494,"rtp":96.56,"rating":0},{"id":1043547,"name":"Crazy Time","soft":"Evolution Gaming Premium","category":"Show Games","pop":43457,"rtp":96.08,"rating":0},{"id":1001712,"name":"Phoenix Forge","soft":"Pragmatic Play","category":"Reels Slots","pop":43399,"rtp":96.51,"rating":0},{"id":1063787,"name":"Crazy Time","soft":"Evolution premium","category":"Show Games","pop":42936,"rtp":96.08,"rating":0},{"id":1014245,"name":"Auspicious Fortune God 2","soft":"FunTa Gaming","category":"Reels Slots","pop":42365,"rtp":96.2,"rating":0},{"id":1000941,"name":"Caishen's Gold","soft":"Pragmatic Play","category":"Progressive Slots","pop":41720,"rtp":97.08,"rating":0},{"id":1035333,"name":"Angel vs Sinner","soft":"Pragmatic Play","category":"Reels Slots","pop":41707,"rtp":96.5,"rating":0},{"id":1020498,"name":"Mines","soft":"Turbo Games","category":"Arcade","pop":41637,"rtp":95.0,"rating":0},{"id":1029951,"name":"Hi-Lo","soft":"Hacksaw Gaming","category":"Hi Lo","pop":41320,"rtp":97.0,"rating":0},{"id":1029802,"name":"Hand of Anubis","soft":"Hacksaw Gaming","category":"Reels Slots","pop":40665,"rtp":92.28,"rating":0},{"id":1023477,"name":"Sky Bounty","soft":"Pragmatic Play","category":"Reels Slots","pop":39695,"rtp":96.05,"rating":0},{"id":1000997,"name":"Roulette","soft":"Pragmatic Play","category":"Roulette","pop":39559,"rtp":97.3,"rating":0},{"id":1020429,"name":"Wild West Duels","soft":"Pragmatic Play","category":"Reels Slots","pop":39530,"rtp":96.0,"rating":0},{"id":1037419,"name":"Legacy of Dead","soft":"Play'n GO","category":"Reels Slots","pop":39029,"rtp":94.51,"rating":0},{"id":1000858,"name":"Pyramid King","soft":"Pragmatic Play","category":"Progressive Slots","pop":38183,"rtp":96.5,"rating":0},{"id":1029490,"name":"The Dog House - Dog or Alive","soft":"Pragmatic Play","category":"Reels Slots","pop":37888,"rtp":96.08,"rating":0},{"id":1004979,"name":"Purple Pills","soft":"Mascot Gaming","category":"Reels Slots","pop":37784,"rtp":96.1,"rating":0},{"id":1036668,"name":"Vampy Party","soft":"Pragmatic Play","category":"Reels Slots","pop":37397,"rtp":96.0,"rating":0},{"id":1083359,"name":"THE DAWN IS COMING!","soft":"Mascot Gaming","category":"Reels Slots","pop":37390,"rtp":91.54,"rating":0},{"id":1019298,"name":"Hot Pepper","soft":"Pragmatic Play","category":"Reels Slots","pop":37363,"rtp":96.45,"rating":0},{"id":1006451,"name":"Rock Vegas","soft":"Pragmatic Play","category":"Reels Slots","pop":36839,"rtp":96.64,"rating":0},{"id":1030838,"name":"Big Win x25","soft":"Mascot Gaming","category":"Fruit Slots","pop":36721,"rtp":94.68,"rating":0},{"id":1000804,"name":"Blackjack 4 - Azure","soft":"Pragmatic Play Live","category":"Black Jack","pop":36472,"rtp":99.28,"rating":0},{"id":1016518,"name":"Down the Rails","soft":"Pragmatic Play","category":"Reels Slots","pop":36404,"rtp":96.51,"rating":0},{"id":1082301,"name":"Big Bass Halloween 3","soft":"Pragmatic Play","category":"Reels Slots","pop":35916,"rtp":96.5,"rating":0},{"id":1006155,"name":"Roulette 10 - Ruby","soft":"Pragmatic Play Live","category":"Roulette","pop":35653,"rtp":97.3,"rating":0},{"id":1005986,"name":"Wild Spin","soft":"Platipus Gaming","category":"Reels Slots","pop":35544,"rtp":95.0,"rating":0},{"id":1020098,"name":"Monster Superlanche","soft":"Pragmatic Play","category":"Reels Slots","pop":35381,"rtp":96.03,"rating":0},{"id":1000855,"name":"Great Rhino Deluxe","soft":"Pragmatic Play","category":"Reels Slots","pop":35300,"rtp":96.54,"rating":0},{"id":1016847,"name":"Wild Hop & Drop","soft":"Pragmatic Play","category":"Reels Slots","pop":35154,"rtp":96.46,"rating":0},{"id":1038661,"name":"Xmas Invaders","soft":"Amigo Gaming","category":"Reels Slots","pop":35003,"rtp":96.0,"rating":0},{"id":1023120,"name":"Power of Merlin Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":34900,"rtp":96.09,"rating":0},{"id":1037787,"name":"Duel at Dawn","soft":"Hacksaw Gaming","category":"Reels Slots","pop":34614,"rtp":96.3,"rating":0},{"id":1004994,"name":"Merry Scary Christmas","soft":"Mascot Gaming","category":"Reels Slots","pop":34389,"rtp":95.2,"rating":0},{"id":1023102,"name":"Ben Gunn Robinson","soft":"Mascot Gaming","category":"Reels Slots","pop":33982,"rtp":95.06,"rating":0},{"id":1025406,"name":"Big Bass Hold & Spinner Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":33788,"rtp":96.7,"rating":0},{"id":1016612,"name":"Super Ace","soft":"JILI Games","category":"Reels Slots","pop":33763,"rtp":97.0,"rating":0},{"id":1029800,"name":"Hand of Anubis","soft":"Hacksaw Gaming","category":"Reels Slots","pop":33593,"rtp":96.24,"rating":0},{"id":1005943,"name":"Book of Fallen","soft":"Pragmatic Play","category":"Reels Slots","pop":33432,"rtp":96.5,"rating":0},{"id":1000817,"name":"Speed Baccarat 1","soft":"Pragmatic Play Live","category":"Baccarat","pop":33425,"rtp":97.3,"rating":0},{"id":1028030,"name":"Candy Jar Clusters","soft":"Pragmatic Play","category":"Progressive Slots","pop":33287,"rtp":96.08,"rating":0},{"id":1004975,"name":"The Rite","soft":"Mascot Gaming","category":"Reels Slots","pop":33029,"rtp":96.02,"rating":0},{"id":1049960,"name":"TESSA HUNT AND THE EYE OF HORUS","soft":"Mascot Gaming","category":"Reels Slots","pop":32685,"rtp":91.77,"rating":0},{"id":1032440,"name":"Samurai Code","soft":"Pragmatic Play","category":"Reels Slots","pop":32431,"rtp":96.07,"rating":0},{"id":1005343,"name":"Golden Dragon","soft":"KA Gaming","category":"Fishing Game","pop":32325,"rtp":96.0,"rating":0},{"id":1021202,"name":"Medusa Money","soft":"RubyPlay","category":"Reels Slots","pop":32302,"rtp":96.5,"rating":0},{"id":1000962,"name":"Dwarven Gold Deluxe","soft":"Pragmatic Play","category":"Reels Slots","pop":32125,"rtp":96.47,"rating":0},{"id":1020033,"name":"Fortune Rabbit Lock 2 Spin","soft":"KA Gaming","category":"Reels Slots","pop":32067,"rtp":96.0,"rating":0},{"id":1049938,"name":"Royalty of Olympus Extreme","soft":"Barbara Bang","category":"Reels Slots","pop":32030,"rtp":96.0,"rating":0},{"id":1000829,"name":"Cowboys Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":31949,"rtp":96.5,"rating":0},{"id":1029300,"name":"3 Clover Pots","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":31925,"rtp":95.84,"rating":0},{"id":1000638,"name":"Hot Hot Fruit","soft":"Habanero","category":"Fruit Slots","pop":31404,"rtp":96.0,"rating":0},{"id":1016524,"name":"Laughing Buddha","soft":"Habanero","category":"Reels Slots","pop":31232,"rtp":96.61,"rating":0},{"id":1084077,"name":"Big Bass Christmas - Frozen Lake","soft":"Pragmatic Play","category":"Reels Slots","pop":30741,"rtp":96.07,"rating":0},{"id":1024309,"name":"Mega Fire Blaze Roulette","soft":"Playtech","category":"Roulette","pop":30559,"rtp":97.31,"rating":0},{"id":1076355,"name":"Ice Fishing","soft":"Evolution","category":"Show Games","pop":30192,"rtp":97.1,"rating":0},{"id":1076910,"name":"Princess & Dwarfs Deluxe","soft":"Mascot Gaming","category":"Reels Slots","pop":30136,"rtp":92.12,"rating":0},{"id":1083113,"name":"Bamboo Bear Deluxe","soft":"Mascot Gaming","category":"Reels Slots","pop":29926,"rtp":91.9,"rating":0},{"id":1000883,"name":"Super Joker","soft":"Pragmatic Play","category":"Reels Slots","pop":29885,"rtp":96.52,"rating":0},{"id":1000879,"name":"Buffalo King","soft":"Pragmatic Play","category":"Reels Slots","pop":29655,"rtp":96.06,"rating":0},{"id":1030459,"name":"Candy Blitz Bombs","soft":"Pragmatic Play","category":"Reels Slots","pop":29536,"rtp":96.5,"rating":0},{"id":1036861,"name":"7 Clovers of Fortune","soft":"Pragmatic Play","category":"Progressive Slots","pop":29528,"rtp":96.47,"rating":0},{"id":1016914,"name":"Wild Marmalade","soft":"GameArt","category":"Reels Slots","pop":29470,"rtp":96.64,"rating":0},{"id":1007389,"name":"Fortune of Giza","soft":"Pragmatic Play","category":"Reels Slots","pop":29136,"rtp":96.51,"rating":0},{"id":1022357,"name":"Aviator","soft":"Spribe","category":"Crash Game","pop":28779,"rtp":97.0,"rating":0},{"id":1075486,"name":"Sweet Bonanza Super Scatter","soft":"Pragmatic Play","category":"Reels Slots","pop":28758,"rtp":96.51,"rating":0},{"id":1028435,"name":"Dragon's Lucky 25","soft":"Mascot Gaming","category":"Reels Slots","pop":28483,"rtp":95.3,"rating":0},{"id":1073548,"name":"Minerz","soft":"Platipus Gaming","category":"Reels Slots","pop":28457,"rtp":95.07,"rating":0},{"id":1024854,"name":"Lucky Neko","soft":"PG Soft","category":"Reels Slots","pop":28113,"rtp":97.35,"rating":0},{"id":1101182,"name":"Sweet Bonanza 2500","soft":"Pragmatic Play","category":"Reels Slots","pop":27993,"rtp":96.52,"rating":0},{"id":1022272,"name":"Posh Cats","soft":"Platipus Gaming","category":"Reels Slots","pop":27684,"rtp":95.0,"rating":0},{"id":1072656,"name":"ANKSUNAMUN DELUXE","soft":"Mascot Gaming","category":"Reels Slots","pop":27397,"rtp":92.31,"rating":0},{"id":1005585,"name":"Bonus Mania Deluxe","soft":"KA Gaming","category":"Reels Slots","pop":27307,"rtp":96.0,"rating":0},{"id":1061832,"name":"Spinman","soft":"Hacksaw Gaming","category":"Reels Slots","pop":26833,"rtp":96.23,"rating":0},{"id":1035342,"name":"Mines Mania","soft":"Urgent Games","category":"Arcade","pop":26796,"rtp":95.0,"rating":0},{"id":1082394,"name":"Tessa Hunt And The Warrior Tomb","soft":"Mascot Gaming","category":"Reels Slots","pop":26440,"rtp":95.15,"rating":0},{"id":1049773,"name":"Joker's Jewels Cash","soft":"Pragmatic Play","category":"Progressive Slots","pop":26365,"rtp":96.51,"rating":0},{"id":1005341,"name":"Treasure Bowl","soft":"KA Gaming","category":"Reels Slots","pop":26278,"rtp":96.0,"rating":0},{"id":1086404,"name":"Fortune of Olympus","soft":"Pragmatic Play","category":"Reels Slots","pop":26193,"rtp":96.55,"rating":0},{"id":1036553,"name":"Yummy Bonanza","soft":"Barbara Bang","category":"Reels Slots","pop":26035,"rtp":96.0,"rating":0},{"id":1036450,"name":"The Dog House Muttley Crew","soft":"Pragmatic Play","category":"Reels Slots","pop":25920,"rtp":96.5,"rating":0},{"id":1004978,"name":"Merlin's Tower","soft":"Mascot Gaming","category":"Reels Slots","pop":25826,"rtp":96.92,"rating":0},{"id":1019920,"name":"La Fiesta De Muertos","soft":"Mascot Gaming","category":"Reels Slots","pop":25823,"rtp":95.22,"rating":0},{"id":1013898,"name":"Gorilla Mayhem","soft":"Pragmatic Play","category":"Reels Slots","pop":25788,"rtp":96.5,"rating":0},{"id":1083130,"name":"Starlight Princess Super Scatter","soft":"Pragmatic Play","category":"Reels Slots","pop":25723,"rtp":96.5,"rating":0},{"id":1036152,"name":"Le Pharaoh","soft":"Hacksaw Gaming","category":"Reels Slots","pop":25649,"rtp":96.21,"rating":0},{"id":1013891,"name":"Tropical Tiki","soft":"Pragmatic Play","category":"Reels Slots","pop":25595,"rtp":96.43,"rating":0},{"id":1042287,"name":"Floating Dragon - Year of the Snake","soft":"Pragmatic Play","category":"Reels Slots","pop":25464,"rtp":96.71,"rating":0},{"id":1027794,"name":"The Wild Gang","soft":"Pragmatic Play","category":"Reels Slots","pop":25325,"rtp":96.02,"rating":0},{"id":1050363,"name":"Fruit Train Express: Hold & Win","soft":"Onlyplay","category":"Progressive Slots","pop":25309,"rtp":97.0,"rating":0},{"id":1035009,"name":"Wood Luck","soft":"Mascot Gaming","category":"Reels Slots","pop":25222,"rtp":95.15,"rating":0},{"id":1037353,"name":"Book of Dead","soft":"Play'n GO","category":"Reels Slots","pop":25047,"rtp":94.25,"rating":0},{"id":1029221,"name":"Fortune Dragon","soft":"PG Soft","category":"Reels Slots","pop":25043,"rtp":96.74,"rating":0},{"id":1006912,"name":"Extra Juicy Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":25034,"rtp":96.42,"rating":0},{"id":1000851,"name":"Curse of the Werewolf Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":24912,"rtp":96.5,"rating":0},{"id":1046110,"name":"Triple Pot Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":24861,"rtp":96.02,"rating":0},{"id":1022802,"name":"Sticky Bees","soft":"Pragmatic Play","category":"Reels Slots","pop":24810,"rtp":96.06,"rating":0},{"id":1050387,"name":"Danny Dollar","soft":"Hacksaw Gaming","category":"Reels Slots","pop":24449,"rtp":96.21,"rating":0},{"id":1100094,"name":"Big Bass Trophy Catch","soft":"Pragmatic Play","category":"Reels Slots","pop":24342,"rtp":96.51,"rating":0},{"id":1032000,"name":"Plinko","soft":"GameArt","category":"Plinko","pop":24316,"rtp":96.0,"rating":0},{"id":1037170,"name":"Coin UP : Lightning","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":23997,"rtp":95.67,"rating":0},{"id":1006833,"name":"Elemental Gems Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":23978,"rtp":96.51,"rating":0},{"id":1001009,"name":"Wheel Of Luck","soft":"Tom Horn Gaming","category":"Reels Slots","pop":23901,"rtp":94.1,"rating":0},{"id":1043676,"name":"Speed Baccarat A","soft":"Evolution Gaming","category":"Baccarat","pop":23806,"rtp":98.94,"rating":0},{"id":1001344,"name":"Mariachi Fiesta","soft":"GameArt","category":"Reels Slots","pop":23613,"rtp":96.2,"rating":0},{"id":1027786,"name":"Tiger Gems","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":23559,"rtp":95.57,"rating":0},{"id":1021243,"name":"Rush Fever 7s","soft":"RubyPlay","category":"Progressive Slots","pop":23502,"rtp":96.9,"rating":0},{"id":1023476,"name":"Sweet Dream Bonanza","soft":"Barbara Bang","category":"Reels Slots","pop":23360,"rtp":95.95,"rating":0},{"id":1007252,"name":"Spirit of Adventure","soft":"Pragmatic Play","category":"Reels Slots","pop":23359,"rtp":96.6,"rating":0},{"id":1000914,"name":"5 Lions","soft":"Pragmatic Play","category":"Reels Slots","pop":23259,"rtp":96.5,"rating":0},{"id":1030024,"name":"Fist of Destruction","soft":"Hacksaw Gaming","category":"Reels Slots","pop":23204,"rtp":96.3,"rating":0},{"id":1075685,"name":"Zombie School Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":23142,"rtp":96.55,"rating":0},{"id":1004002,"name":"Chicken Drop","soft":"Pragmatic Play","category":"Reels Slots","pop":23057,"rtp":96.5,"rating":0},{"id":1022811,"name":"Fruit Machine: Megabonus!","soft":"Mascot Gaming","category":"Fruit Slots","pop":22854,"rtp":95.3,"rating":0},{"id":1024768,"name":"Fortune Mouse","soft":"PG Soft","category":"Reels Slots","pop":22779,"rtp":96.96,"rating":0},{"id":1026015,"name":"Twilight Princess","soft":"Pragmatic Play","category":"Reels Slots","pop":22721,"rtp":96.08,"rating":0},{"id":1027767,"name":"More Magic Apple","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":22651,"rtp":95.57,"rating":0},{"id":1073866,"name":"FRIAR TUCK'S INN","soft":"Mascot Gaming","category":"Reels Slots","pop":22292,"rtp":94.89,"rating":0},{"id":1004976,"name":"Venetian Magic","soft":"Mascot Gaming","category":"Reels Slots","pop":22265,"rtp":95.68,"rating":0},{"id":1050373,"name":"Sleeping Dragon","soft":"Pragmatic Play","category":"Progressive Slots","pop":22185,"rtp":96.5,"rating":0},{"id":1086519,"name":"FRUIT MACHINE: MEGA X","soft":"Mascot Gaming","category":"Reels Slots","pop":22141,"rtp":92.31,"rating":0},{"id":1028335,"name":"Blazing Wilds Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":21983,"rtp":96.06,"rating":0},{"id":1004981,"name":"Riot","soft":"Mascot Gaming","category":"Reels Slots","pop":21781,"rtp":96.7,"rating":0},{"id":1006094,"name":"Torch Of Fire","soft":"Caleta Gaming","category":"Reels Slots","pop":21744,"rtp":96.17,"rating":0},{"id":1091359,"name":"Big Bass Raceday Repeat","soft":"Pragmatic Play","category":"Reels Slots","pop":21691,"rtp":96.51,"rating":0},{"id":1073550,"name":"Thor Turbo Power","soft":"Platipus Gaming","category":"Reels Slots","pop":21589,"rtp":95.0,"rating":0},{"id":1035178,"name":"Mustang Gold Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":21303,"rtp":95.56,"rating":0},{"id":1029301,"name":"3 Egypt Chests","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":21274,"rtp":95.71,"rating":0},{"id":1043445,"name":"Space Blaze","soft":"Mascot Gaming","category":"Crash Game","pop":21118,"rtp":95.0,"rating":0},{"id":1050132,"name":"3 Super Hot Chillies","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":21103,"rtp":95.74,"rating":0},{"id":1000818,"name":"Speed Roulette 1","soft":"Pragmatic Play Live","category":"Roulette","pop":21008,"rtp":97.3,"rating":0},{"id":1035757,"name":"Joker's Jewels Hot","soft":"Pragmatic Play","category":"Progressive Slots","pop":20960,"rtp":96.5,"rating":0},{"id":1009093,"name":"Fortune Tiger","soft":"PG Soft","category":"Reels Slots","pop":20936,"rtp":96.81,"rating":0},{"id":1027757,"name":"Hit the Gold!","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":20811,"rtp":95.59,"rating":0},{"id":1011297,"name":"Money Minter","soft":"Evoplay","category":"Reels Slots","pop":20728,"rtp":96.13,"rating":0},{"id":1016916,"name":"Floating Dragon Hold & Spin Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":20642,"rtp":96.7,"rating":0},{"id":1016567,"name":"Octobeer Fortunes","soft":"Pragmatic Play","category":"Reels Slots","pop":20629,"rtp":96.53,"rating":0},{"id":1018230,"name":"Crash","soft":"Fast Games Galaxsys","category":"Crash Game","pop":20421,"rtp":96.72,"rating":0},{"id":1024837,"name":"Wild Bounty Showdown","soft":"PG Soft","category":"Reels Slots","pop":20408,"rtp":96.75,"rating":0},{"id":1088730,"name":"Le Fisherman","soft":"Hacksaw Gaming","category":"Reels Slots","pop":20055,"rtp":96.33,"rating":0},{"id":1033979,"name":"Bow of Artemis","soft":"Pragmatic Play","category":"Reels Slots","pop":20040,"rtp":96.5,"rating":0},{"id":1030422,"name":"Release the Bison","soft":"Pragmatic Play","category":"Reels Slots","pop":20007,"rtp":96.5,"rating":0},{"id":1022833,"name":"Pirates Pub","soft":"Pragmatic Play","category":"Reels Slots","pop":20007,"rtp":96.03,"rating":0},{"id":1077132,"name":"Olympus Rivals","soft":"Amigo Gaming","category":"Reels Slots","pop":19911,"rtp":96.0,"rating":0},{"id":1032081,"name":"Ze Zeus","soft":"Hacksaw Gaming","category":"Reels Slots","pop":19855,"rtp":96.34,"rating":0},{"id":1000939,"name":"Wild Spells","soft":"Pragmatic Play","category":"Progressive Slots","pop":19828,"rtp":96.4,"rating":0},{"id":1088638,"name":"Zeus vs Hades - Gods of War 250","soft":"Pragmatic Play","category":"Reels Slots","pop":19827,"rtp":96.56,"rating":0},{"id":1037743,"name":"Piggy Coins","soft":"Amigo Gaming","category":"Progressive Slots","pop":19821,"rtp":96.0,"rating":0},{"id":1001851,"name":"Lucky Lightning","soft":"Pragmatic Play","category":"Reels Slots","pop":19530,"rtp":96.48,"rating":0},{"id":1027425,"name":"Viking Forge","soft":"Pragmatic Play","category":"Reels Slots","pop":19466,"rtp":96.05,"rating":0},{"id":1027751,"name":"Grab More Gold!","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":19333,"rtp":95.71,"rating":0},{"id":1001922,"name":"Hell Hot 100","soft":"Endorphina","category":"Reels Slots","pop":19152,"rtp":96.0,"rating":0},{"id":1007067,"name":"Barn Festival","soft":"Pragmatic Play","category":"Reels Slots","pop":19080,"rtp":96.45,"rating":0},{"id":1021241,"name":"Elephant Stampede","soft":"RubyPlay","category":"Progressive Slots","pop":19013,"rtp":96.91,"rating":0},{"id":1024207,"name":"Book of Dead","soft":"Play'n GO","category":"Reels Slots","pop":19007,"rtp":94.25,"rating":0},{"id":1004973,"name":"Northern Heat","soft":"Mascot Gaming","category":"Reels Slots","pop":18903,"rtp":96.52,"rating":0},{"id":1007182,"name":"The Greatest Catch","soft":"Evoplay","category":"Reels Slots","pop":18862,"rtp":96.09,"rating":0},{"id":1063823,"name":"Lightning Roulette","soft":"Evolution premium","category":"Roulette","pop":18839,"rtp":97.3,"rating":0},{"id":1032152,"name":"Hand of Midas 2","soft":"Pragmatic Play","category":"Reels Slots","pop":18808,"rtp":96.07,"rating":0},{"id":1028277,"name":"Hit Coins 2 Hold and Spin","soft":"Barbara Bang","category":"Progressive Slots","pop":18718,"rtp":96.0,"rating":0},{"id":1000898,"name":"Extra Juicy","soft":"Pragmatic Play","category":"Reels Slots","pop":18685,"rtp":96.52,"rating":0},{"id":1024943,"name":"Lucky Piggy","soft":"PG Soft","category":"Reels Slots","pop":18549,"rtp":96.79,"rating":0},{"id":1033638,"name":"SixSixSix","soft":"Hacksaw Gaming","category":"Reels Slots","pop":18453,"rtp":96.15,"rating":0},{"id":1029865,"name":"Rip City","soft":"Hacksaw Gaming","category":"Reels Slots","pop":18362,"rtp":96.22,"rating":0},{"id":1037778,"name":"Might of Freya Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":18264,"rtp":96.5,"rating":0},{"id":1018067,"name":"Sword of Ares","soft":"Pragmatic Play","category":"Reels Slots","pop":18244,"rtp":96.4,"rating":0},{"id":1004987,"name":"Wild Spirit","soft":"Mascot Gaming","category":"Reels Slots","pop":18182,"rtp":97.01,"rating":0},{"id":1042296,"name":"Candy Machine","soft":"Barbara Bang","category":"Reels Slots","pop":18138,"rtp":96.0,"rating":0},{"id":1030507,"name":"Fruity Treats","soft":"Pragmatic Play","category":"Reels Slots","pop":18128,"rtp":95.07,"rating":0},{"id":1030820,"name":"Pinky Plinko","soft":"Spinmatic Entertainment","category":"Plinko","pop":18087,"rtp":96.25,"rating":0},{"id":1036820,"name":"Piggy Bonanza","soft":"Onlyplay","category":"Reels Slots","pop":17896,"rtp":95.5,"rating":0},{"id":1032231,"name":"Crown Coins","soft":"Endorphina","category":"Progressive Slots","pop":17737,"rtp":96.06,"rating":0},{"id":1016449,"name":"Mriya","soft":"NetGame Entertainment","category":"Arcade","pop":17705,"rtp":96.1,"rating":0},{"id":1076419,"name":"Mines","soft":"InOut","category":"Arcade","pop":17564,"rtp":95.0,"rating":0},{"id":1024874,"name":"Crypto Gold","soft":"PG Soft","category":"Reels Slots","pop":17555,"rtp":96.71,"rating":0},{"id":1027782,"name":"Sun of Egypt 3","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":17501,"rtp":95.66,"rating":0},{"id":1032073,"name":"Buffalo King Untamed Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":17468,"rtp":96.02,"rating":0},{"id":1100340,"name":"Le Pickwin","soft":"Hacksaw Gaming","category":"Reels Slots","pop":17448,"rtp":96.34,"rating":0},{"id":1090635,"name":"Mummy's Jewels 100","soft":"Pragmatic Play","category":"Progressive Slots","pop":17396,"rtp":96.5,"rating":0},{"id":1000961,"name":"Lucky Dragons","soft":"Pragmatic Play","category":"Reels Slots","pop":17389,"rtp":95.19,"rating":0},{"id":1016963,"name":"Aladdin's Quest","soft":"GameArt","category":"Reels Slots","pop":17208,"rtp":96.59,"rating":0},{"id":1048229,"name":"Dorks of the Deep","soft":"Hacksaw Gaming","category":"Reels Slots","pop":17020,"rtp":96.2,"rating":0},{"id":1021731,"name":"Mines","soft":"JILI Games","category":"Arcade","pop":17017,"rtp":97.0,"rating":0},{"id":1017933,"name":"Firebird Spirit - Connect & Collect","soft":"Pragmatic Play","category":"Reels Slots","pop":16835,"rtp":96.0,"rating":0},{"id":1049478,"name":"Wishbringer","soft":"Hacksaw Gaming","category":"Reels Slots","pop":16785,"rtp":96.33,"rating":0},{"id":1000996,"name":"Diamonds are Forever 3 Lines","soft":"Pragmatic Play","category":"Reels Slots","pop":16752,"rtp":96.96,"rating":0},{"id":1024879,"name":"Legend of Perseus","soft":"PG Soft","category":"Reels Slots","pop":16710,"rtp":96.77,"rating":0},{"id":1028015,"name":"Christmas Infinite Gifts","soft":"Mascot Gaming","category":"Reels Slots","pop":16661,"rtp":94.7,"rating":0},{"id":1000864,"name":"Book of Tut","soft":"Pragmatic Play","category":"Reels Slots","pop":16627,"rtp":96.5,"rating":0},{"id":1000876,"name":"Release the Kraken","soft":"Pragmatic Play","category":"Reels Slots","pop":16533,"rtp":96.5,"rating":0},{"id":1000816,"name":"Roulette 2","soft":"Pragmatic Play Live","category":"Roulette","pop":16527,"rtp":97.3,"rating":0},{"id":1004988,"name":"Fruit Vegas","soft":"Mascot Gaming","category":"Fruit Slots","pop":16480,"rtp":96.1,"rating":0},{"id":1079955,"name":"Bigger Barn House Bonanza","soft":"Pragmatic Play","category":"Progressive Slots","pop":16459,"rtp":96.5,"rating":0},{"id":1021783,"name":"Rocket Chimp Jackpot!","soft":"Mascot Gaming","category":"Progressive Slots","pop":16455,"rtp":95.19,"rating":0},{"id":1048551,"name":"Life and Death","soft":"Hacksaw Gaming","category":"Reels Slots","pop":16255,"rtp":96.36,"rating":0},{"id":1100541,"name":"Great Ghosts!","soft":"Pragmatic Play","category":"Reels Slots","pop":16253,"rtp":96.5,"rating":0},{"id":1036648,"name":"Ouija Secrets","soft":"Mascot Gaming","category":"Reels Slots","pop":16189,"rtp":94.5,"rating":0},{"id":1049818,"name":"3 Hot Teapots","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":16171,"rtp":95.68,"rating":0},{"id":1004974,"name":"CanCan Saloon","soft":"Mascot Gaming","category":"Reels Slots","pop":16154,"rtp":96.74,"rating":0},{"id":1016958,"name":"Book Of Tut Respin","soft":"Pragmatic Play","category":"Reels Slots","pop":16137,"rtp":96.5,"rating":0},{"id":1024858,"name":"Ways of the Qilin","soft":"PG Soft","category":"Reels Slots","pop":16086,"rtp":96.69,"rating":0},{"id":1024857,"name":"Wild Bandito","soft":"PG Soft","category":"Reels Slots","pop":16024,"rtp":96.73,"rating":0},{"id":1051261,"name":"Super China Pots","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":15981,"rtp":95.71,"rating":0},{"id":1098207,"name":"Golden Wealth Baccarat","soft":"Evolution","category":"Baccarat","pop":15900,"rtp":98.85,"rating":0},{"id":1061826,"name":"Sweet Bonanza 1000 Dice","soft":"Pragmatic Play","category":"Dice slots","pop":15836,"rtp":96.53,"rating":0},{"id":1050269,"name":"Resurrecting Riches","soft":"Pragmatic Play","category":"Reels Slots","pop":15789,"rtp":96.5,"rating":0},{"id":1000805,"name":"Blackjack 1 - Azure","soft":"Pragmatic Play Live","category":"Black Jack","pop":15780,"rtp":99.28,"rating":0},{"id":1021271,"name":"Rush Fever 7s Deluxe","soft":"RubyPlay","category":"Progressive Slots","pop":15779,"rtp":96.56,"rating":0},{"id":1029970,"name":"Densho","soft":"Hacksaw Gaming","category":"Progressive Slots","pop":15758,"rtp":96.4,"rating":0},{"id":1048590,"name":"The Dog House - Royal Hunt","soft":"Pragmatic Play","category":"Reels Slots","pop":15711,"rtp":96.53,"rating":0},{"id":1000912,"name":"Madame Destiny","soft":"Pragmatic Play","category":"Reels Slots","pop":15624,"rtp":96.49,"rating":0},{"id":1027727,"name":"Big Heist","soft":"3 Oaks Gaming","category":"Reels Slots","pop":15621,"rtp":95.71,"rating":0},{"id":1001510,"name":"Amazing Money Machine","soft":"Pragmatic Play","category":"Progressive Slots","pop":15601,"rtp":96.42,"rating":0},{"id":1019280,"name":"Money Standard Wild","soft":"Fazi Interactive","category":"Reels Slots","pop":15584,"rtp":96.0,"rating":0},{"id":1045639,"name":"FRKN Bananas","soft":"Hacksaw Gaming","category":"Reels Slots","pop":15583,"rtp":96.31,"rating":0},{"id":1024850,"name":"Mahjong Ways","soft":"PG Soft","category":"Reels Slots","pop":15553,"rtp":96.92,"rating":0},{"id":1036930,"name":"Fangtastic Freespins","soft":"Pragmatic Play","category":"Reels Slots","pop":15395,"rtp":96.51,"rating":0},{"id":1066284,"name":"4 Pots Riches: Hold and Win","soft":"Playson","category":"Progressive Slots","pop":15307,"rtp":95.7,"rating":0},{"id":1029302,"name":"Aztec Fire 2","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":15175,"rtp":95.54,"rating":0},{"id":1051256,"name":"Gates of Hades","soft":"Pragmatic Play","category":"Reels Slots","pop":14920,"rtp":96.52,"rating":0},{"id":1027774,"name":"Rio Gems","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":14739,"rtp":95.71,"rating":0},{"id":1022997,"name":"The Emperor's Curse","soft":"ZeusPlay","category":"Reels Slots","pop":14652,"rtp":96.1,"rating":0},{"id":1007259,"name":"Drill That Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":14615,"rtp":96.49,"rating":0},{"id":1027721,"name":"777 Coins","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":14539,"rtp":95.75,"rating":0},{"id":1034751,"name":"Dragon Gold 88","soft":"Pragmatic Play","category":"Reels Slots","pop":14422,"rtp":96.5,"rating":0},{"id":1000814,"name":"Baccarat 1","soft":"Pragmatic Play Live","category":"Baccarat","pop":14404,"rtp":98.94,"rating":0},{"id":1042785,"name":"Aviator","soft":"Spribe","category":"Crash Game","pop":14333,"rtp":97.0,"rating":0},{"id":1007229,"name":"The Greatest Catch Bonus Buy","soft":"Evoplay","category":"Reels Slots","pop":14306,"rtp":95.98,"rating":0},{"id":1006010,"name":"Lucky Money","soft":"Platipus Gaming","category":"Reels Slots","pop":14297,"rtp":95.09,"rating":0},{"id":1076950,"name":"Miami Mayhem","soft":"Hacksaw Gaming","category":"Reels Slots","pop":14262,"rtp":96.35,"rating":0},{"id":1061083,"name":"Rush for Diamonds: Hold and Win","soft":"Onlyplay","category":"Progressive Slots","pop":14251,"rtp":97.0,"rating":0},{"id":1037176,"name":"Lucky Penny","soft":"3 Oaks Gaming","category":"Reels Slots","pop":14200,"rtp":95.64,"rating":0},{"id":1035832,"name":"Congo Cash XL","soft":"Pragmatic Play","category":"Progressive Slots","pop":14151,"rtp":96.5,"rating":0},{"id":1076442,"name":"Chicken Road","soft":"InOut","category":"Crash Game","pop":13885,"rtp":98.0,"rating":0},{"id":1023610,"name":"Rocket Blast Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":13881,"rtp":96.01,"rating":0},{"id":1000792,"name":"Book Of Santa","soft":"Endorphina","category":"Reels Slots","pop":13771,"rtp":96.0,"rating":0},{"id":1018268,"name":"Towering Fortunes","soft":"Pragmatic Play","category":"Reels Slots","pop":13733,"rtp":96.5,"rating":0},{"id":1020921,"name":"Leprechaun's coins","soft":"Platipus Gaming","category":"Reels Slots","pop":13725,"rtp":95.0,"rating":0},{"id":1021258,"name":"Ancient Pharaoh","soft":"RubyPlay","category":"Progressive Slots","pop":13706,"rtp":96.51,"rating":0},{"id":1020480,"name":"Mochimon","soft":"Pragmatic Play","category":"Reels Slots","pop":13704,"rtp":96.5,"rating":0},{"id":1076420,"name":"Roulette","soft":"InOut","category":"Roulette","pop":13695,"rtp":98.5,"rating":0},{"id":1001331,"name":"Lucky Coins","soft":"GameArt","category":"Reels Slots","pop":13686,"rtp":96.09,"rating":0},{"id":1036627,"name":"Release the Kraken Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":13678,"rtp":96.4,"rating":0},{"id":1061824,"name":"Big Bass Dice","soft":"Pragmatic Play","category":"Dice slots","pop":13567,"rtp":96.71,"rating":0},{"id":1073613,"name":"Club Tropicana - Happy Hour","soft":"Pragmatic Play","category":"Reels Slots","pop":13394,"rtp":96.5,"rating":0},{"id":1028059,"name":"Floating Dragon New Year Festival Ultra Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":13367,"rtp":96.7,"rating":0},{"id":1027729,"name":"Black Wolf 2","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":13181,"rtp":95.54,"rating":0},{"id":1030953,"name":"Pirate Bonanza","soft":"Hacksaw Gaming","category":"Reels Slots","pop":13099,"rtp":96.31,"rating":0},{"id":1029845,"name":"Rotten","soft":"Hacksaw Gaming","category":"Reels Slots","pop":13068,"rtp":96.27,"rating":0},{"id":1004003,"name":"Fruit Party 2","soft":"Pragmatic Play","category":"Fruit Slots","pop":13023,"rtp":96.53,"rating":0},{"id":1088769,"name":"The Epic Win x125","soft":"Mascot Gaming","category":"Reels Slots","pop":13001,"rtp":95.96,"rating":0},{"id":1006191,"name":"Crystal Caverns Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":12972,"rtp":96.46,"rating":0},{"id":1000976,"name":"Honey Honey Honey","soft":"Pragmatic Play","category":"Reels Slots","pop":12946,"rtp":96.5,"rating":0},{"id":1034869,"name":"Sumo Supreme Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":12928,"rtp":96.5,"rating":0},{"id":1020496,"name":"Dice Twice","soft":"Turbo Games","category":"Arcade","pop":12924,"rtp":97.5,"rating":0},{"id":1024947,"name":"Asgardian Rising","soft":"PG Soft","category":"Reels Slots","pop":12815,"rtp":96.76,"rating":0},{"id":1025885,"name":"Fortunes of Aztec","soft":"Pragmatic Play","category":"Reels Slots","pop":12778,"rtp":96.42,"rating":0},{"id":1028055,"name":"Piggy Tap","soft":"Onlyplay","category":"Progressive Slots","pop":12770,"rtp":95.16,"rating":0},{"id":1004986,"name":"Red Horde","soft":"Mascot Gaming","category":"Reels Slots","pop":12766,"rtp":96.5,"rating":0},{"id":1063498,"name":"Coin Princess x1000","soft":"3 Oaks Gaming","category":"Reels Slots","pop":12662,"rtp":95.72,"rating":0},{"id":1028262,"name":"Castle of Fire","soft":"Pragmatic Play","category":"Reels Slots","pop":12606,"rtp":96.01,"rating":0},{"id":1030012,"name":"Xmas Drop","soft":"Hacksaw Gaming","category":"Reels Slots","pop":12572,"rtp":96.22,"rating":0},{"id":1072818,"name":"Duck Hunters","soft":"NoLimit","category":"Reels Slots","pop":12566,"rtp":96.05,"rating":0},{"id":1000854,"name":"Aztec Gems Deluxe","soft":"Pragmatic Play","category":"Progressive Slots","pop":12554,"rtp":96.5,"rating":0},{"id":1037246,"name":"3 Coin Volcanoes","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":12513,"rtp":95.68,"rating":0},{"id":1084297,"name":"GRYPHON'S CASTLE DELUXE","soft":"Mascot Gaming","category":"Reels Slots","pop":12509,"rtp":92.13,"rating":0},{"id":1037490,"name":"Tome of Madness","soft":"Play'n GO","category":"Reels Slots","pop":12405,"rtp":94.52,"rating":0},{"id":1005729,"name":"ONE Blackjack 2- Indigo","soft":"Pragmatic Play Live","category":"Black Jack","pop":12330,"rtp":96.51,"rating":0},{"id":1072673,"name":"Gold Party 2 - After Hours","soft":"Pragmatic Play","category":"Progressive Slots","pop":12322,"rtp":96.5,"rating":0},{"id":1018302,"name":"Shield Of Sparta","soft":"Pragmatic Play","category":"Reels Slots","pop":12301,"rtp":96.5,"rating":0},{"id":1066278,"name":"Coin Flynn Deluxe","soft":"Onlyplay","category":"Reels Slots","pop":12267,"rtp":97.0,"rating":0},{"id":1037744,"name":"Pot of Luck Hold and Spin","soft":"Barbara Bang","category":"Progressive Slots","pop":12246,"rtp":96.0,"rating":0},{"id":1086952,"name":"3 Super Coin Volcanoes","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":12180,"rtp":95.79,"rating":0},{"id":1024002,"name":"Legacy of Dead","soft":"Play'n GO","category":"Reels Slots","pop":12161,"rtp":96.58,"rating":0},{"id":1043619,"name":"Lightning Roulette","soft":"Evolution Gaming Premium","category":"Roulette","pop":12121,"rtp":97.1,"rating":0},{"id":1005489,"name":"Volcano Adventure","soft":"KA Gaming","category":"Reels Slots","pop":12095,"rtp":96.0,"rating":0},{"id":1029808,"name":"Dork Unit","soft":"Hacksaw Gaming","category":"Reels Slots","pop":12052,"rtp":96.24,"rating":0},{"id":1021253,"name":"Feliz Dia de los Muertos","soft":"RubyPlay","category":"Reels Slots","pop":12049,"rtp":96.88,"rating":0},{"id":1029507,"name":"All Ways Luck","soft":"Endorphina","category":"Reels Slots","pop":12039,"rtp":96.0,"rating":0},{"id":1028094,"name":"Juicy Fruits Multihold","soft":"Pragmatic Play","category":"Fruit Slots","pop":12007,"rtp":96.04,"rating":0},{"id":1024926,"name":"Rise of Apollo","soft":"PG Soft","category":"Reels Slots","pop":12004,"rtp":96.78,"rating":0},{"id":1030042,"name":"Beam Boys","soft":"Hacksaw Gaming","category":"Reels Slots","pop":11985,"rtp":96.26,"rating":0},{"id":1013897,"name":"Boom City","soft":"Pragmatic Play Live","category":"Show Games","pop":11935,"rtp":96.21,"rating":0},{"id":1023632,"name":"Piggy Bankers","soft":"Pragmatic Play","category":"Reels Slots","pop":11911,"rtp":96.05,"rating":0},{"id":1072579,"name":"Multihand Blackjack Pro 2","soft":"BGaming","category":"Black Jack","pop":11908,"rtp":99.4,"rating":0},{"id":1008929,"name":"Space XY","soft":"BGaming","category":"Crash Game","pop":11649,"rtp":97.0,"rating":0},{"id":1019962,"name":"Osiris Gold","soft":"NetGame Entertainment","category":"Reels Slots","pop":11630,"rtp":96.1,"rating":0},{"id":1002720,"name":"Megamoney","soft":"Red Rake Gaming","category":"Bingo","pop":11617,"rtp":95.88,"rating":0},{"id":1021251,"name":"Vegas No Limit Wins","soft":"RubyPlay","category":"Reels Slots","pop":11551,"rtp":96.88,"rating":0},{"id":1022993,"name":"The Divine 12th","soft":"ZeusPlay","category":"Reels Slots","pop":11531,"rtp":96.0,"rating":0},{"id":1034030,"name":"Money Stacks","soft":"Pragmatic Play","category":"Progressive Slots","pop":11520,"rtp":96.5,"rating":0},{"id":1023415,"name":"Auto Mega Roulette","soft":"Pragmatic Play Live","category":"Roulette","pop":11412,"rtp":97.5,"rating":0},{"id":1029796,"name":"Gladiator Legends","soft":"Hacksaw Gaming","category":"Reels Slots","pop":11399,"rtp":96.31,"rating":0},{"id":1002553,"name":"Queens and Diamonds","soft":"Red Rake Gaming","category":"Reels Slots","pop":11369,"rtp":95.38,"rating":0},{"id":1029108,"name":"3 Pots Riches Extra: Hold and Win","soft":"Playson","category":"Progressive Slots","pop":11326,"rtp":95.76,"rating":0},{"id":1006207,"name":"Twin Fruits of Santa","soft":"Mascot Gaming","category":"Fruit Slots","pop":11315,"rtp":95.5,"rating":0},{"id":1064199,"name":"Lightning Storm","soft":"Evolution premium","category":"Show Games","pop":11311,"rtp":97.44,"rating":0},{"id":1079831,"name":"Wild Spirit Deluxe","soft":"Mascot Gaming","category":"Reels Slots","pop":11307,"rtp":92.21,"rating":0},{"id":1088044,"name":"1000 Olympus Rivals","soft":"Amigo Gaming","category":"Reels Slots","pop":11297,"rtp":96.0,"rating":0},{"id":1000884,"name":"American Blackjack","soft":"Pragmatic Play","category":"Black Jack","pop":11288,"rtp":99.6,"rating":0},{"id":1003774,"name":"Starburst","soft":"NetEnt","category":"Reels Slots","pop":11224,"rtp":96.09,"rating":0},{"id":1005000,"name":"Twin Fruits of Olympus","soft":"Mascot Gaming","category":"Fruit Slots","pop":11102,"rtp":95.5,"rating":0},{"id":1076986,"name":"Chili XXX","soft":"Amigo Gaming","category":"Reels Slots","pop":11084,"rtp":96.0,"rating":0},{"id":1038419,"name":"Icy Rockfall X25","soft":"Mascot Gaming","category":"Reels Slots","pop":11078,"rtp":94.8,"rating":0},{"id":1029445,"name":"Yukon Fever","soft":"Mascot Gaming","category":"Reels Slots","pop":11073,"rtp":95.52,"rating":0},{"id":1029304,"name":"Gold Nuggets","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":11065,"rtp":95.63,"rating":0},{"id":1016645,"name":"Fortune Gems","soft":"JILI Games","category":"Reels Slots","pop":11042,"rtp":97.0,"rating":0},{"id":1062625,"name":"Wild West Gold Blazing Bounty","soft":"Pragmatic Play","category":"Reels Slots","pop":11041,"rtp":96.48,"rating":0},{"id":1023491,"name":"The Dog House Dice Show","soft":"Pragmatic Play","category":"Dice slots","pop":11033,"rtp":96.51,"rating":0},{"id":1006467,"name":"Gates of Valhalla","soft":"Pragmatic Play","category":"Reels Slots","pop":10979,"rtp":96.46,"rating":0},{"id":1023595,"name":"Plinko","soft":"JILI Games","category":"Plinko","pop":10932,"rtp":97.0,"rating":0},{"id":1030885,"name":"Revenge of Loki Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":10826,"rtp":96.5,"rating":0},{"id":1020509,"name":"Turbo Mines","soft":"Turbo Games","category":"Arcade","pop":10820,"rtp":95.0,"rating":0},{"id":1016723,"name":"Book of Golden Sands","soft":"Pragmatic Play","category":"Reels Slots","pop":10752,"rtp":96.46,"rating":0},{"id":1028235,"name":"The Big Dawgs","soft":"Pragmatic Play","category":"Reels Slots","pop":10744,"rtp":95.97,"rating":0},{"id":1001849,"name":"Empty the Bank","soft":"Pragmatic Play","category":"Reels Slots","pop":10650,"rtp":96.48,"rating":0},{"id":1027912,"name":"5 Frozen Charms Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":10588,"rtp":96.53,"rating":0},{"id":1024862,"name":"Caishen Wins","soft":"PG Soft","category":"Reels Slots","pop":10577,"rtp":96.92,"rating":0},{"id":1027755,"name":"Green Chilli 2","soft":"3 Oaks Gaming","category":"Progressive Slots","pop":10565,"rtp":95.6,"rating":0},{"id":1050032,"name":"5 Lions Reborn","soft":"Pragmatic Play","category":"Reels Slots","pop":10525,"rtp":96.5,"rating":0},{"id":1000974,"name":"Greek Gods","soft":"Pragmatic Play","category":"Reels Slots","pop":10510,"rtp":96.5,"rating":0},{"id":1038662,"name":"Mining Rush","soft":"Pragmatic Play","category":"Reels Slots","pop":10508,"rtp":96.56,"rating":0},{"id":1000913,"name":"Asgard","soft":"Pragmatic Play","category":"Reels Slots","pop":10467,"rtp":96.48,"rating":0},{"id":1077426,"name":"Le Zeus","soft":"Hacksaw Gaming","category":"Reels Slots","pop":10463,"rtp":96.26,"rating":0},{"id":1005379,"name":"Pinata","soft":"KA Gaming","category":"Reels Slots","pop":10436,"rtp":96.0,"rating":0},{"id":1020414,"name":"Irish Coins Lock 2 Spin","soft":"KA Gaming","category":"Reels Slots","pop":10371,"rtp":96.0,"rating":0},{"id":1046058,"name":"Lucky's Wild Pub","soft":"Pragmatic Play","category":"Progressive Slots","pop":10367,"rtp":96.5,"rating":0},{"id":1019098,"name":"Gangsterz","soft":"BGaming","category":"Reels Slots","pop":10340,"rtp":96.25,"rating":0},{"id":1024851,"name":"Mahjong Ways 2","soft":"PG Soft","category":"Reels Slots","pop":10318,"rtp":96.95,"rating":0},{"id":1006992,"name":"Rainbow Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":10254,"rtp":96.63,"rating":0},{"id":1020380,"name":"Peak Power","soft":"Pragmatic Play","category":"Reels Slots","pop":10253,"rtp":96.02,"rating":0},{"id":1048634,"name":"Bandit Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":10137,"rtp":96.55,"rating":0},{"id":1005977,"name":"7 & Hot Fruits","soft":"Platipus Gaming","category":"Fruit Slots","pop":10091,"rtp":95.0,"rating":0},{"id":1025329,"name":"Joker Coins Megaways","soft":"Onlyplay","category":"Megaways Slots","pop":10087,"rtp":95.24,"rating":0},{"id":1005114,"name":"Texas Holdem Poker","soft":"Evoplay","category":"Video Poker","pop":10085,"rtp":99.37,"rating":0},{"id":1087890,"name":"Hot Tuna","soft":"Pragmatic Play","category":"Reels Slots","pop":10069,"rtp":96.53,"rating":0},{"id":1102552,"name":"Big Bass Football Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":9986,"rtp":96.5,"rating":0}]};
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var TYPEMAP={'Reels Slots':'Slots','Progressive Slots':'Slots','Fruit Slots':'Slots','Megaways Slots':'Slots','Dice slots':'Slots','Video Slots':'Slots',
+    'Roulette':'Live & Table','Black Jack':'Live & Table','Baccarat':'Live & Table','Poker':'Live & Table','Sic Bo':'Live & Table','Card Game':'Live & Table','Show Games':'Live & Table','Video Poker':'Live & Table','Casino Holdem':'Live & Table','Dream Catcher':'Live & Table',
+    'Crash Game':'Instant','Plinko':'Instant','Dice':'Instant','Scratch Cards':'Instant','Keno':'Instant','Bingo':'Instant','Lotto':'Instant','Hi Lo':'Instant','Mines':'Instant',
+    'Fishing Game':'Fishing','Arcade':'Arcade','Virtual Games':'Virtual','Sportbook':'Virtual','Sports':'Virtual','Tournaments':'Other','Lobby':'Other'};
+  function typeOf(cat){return TYPEMAP[cat]||'Other';}
+  // days = deterministic pseudo "integrated N days ago" for the Newest sort (real build: nux_games.created_at)
+  DATA.games.forEach(function(g){g.gtype=typeOf(g.category);g.days=(g.id*7919)%365;});
+  var NAMECOUNT={}; DATA.games.forEach(function(g){NAMECOUNT[g.name]=(NAMECOUNT[g.name]||0)+1;});
+  var typeAgg={};
+  DATA.categories.forEach(function(c){var t=typeOf(c.name);typeAgg[t]=(typeAgg[t]||0)+(+c.count||0);});
+  var TYPES=Object.keys(typeAgg).map(function(t){return{name:t,count:typeAgg[t]};}).sort(function(a,b){return b.count-a.count;});
+  var tints=['#3C8DBC','#2EA447','#f39c12','#8e44ad','#16a085','#dd4b39','#2c7fb8'];
+
+  // ===== state =====
+  var scope=null, selProv=new Set(), selType=new Set(), selCat=new Set(), specific=new Set();
+  var pins={}, ratings={}, order=1, sort='site';
+  var excluded=new Set(), includes=new Set();
+  var ratedBase={};
+  DATA.games.forEach(function(g){ratings[g.id]=g.rating;ratedBase[g.id]=g.rating;});
+  var dirtyFlag=false, saving=false, lastLive=null;
+  var CAP=60, tailShown=CAP, addShown=50, pinAdd=true;
+  var snap=null, seedOffer=null, lastTvis=[], lastAddPool=[];
+  var mProv=new Set(), mCat=new Set();
+
+  function setChip(t,cls){var c=$('#chip');c.className='chip '+(cls||'');c.textContent=t;}
+  function dirty(){dirtyFlag=true;setChip('Unsaved changes','dirty');var v=$('#viewlive');if(v)v.style.display='none';}
+  function nf(n){return (+n).toLocaleString();}
+  function fmtPop(n){n=+n||0;return n>=1e6?(n/1e6).toFixed(1)+'M':(n>=1e3?Math.round(n/1e3)+'K':String(n));}
+  function fmtRtp(r){if(r===''||r===null||r===undefined)return '';var v=parseFloat(r);return isNaN(v)?'':(Math.round(v*100)/100)+'%';}
+  function pad2(n){return (n<10?'0':'')+n;}
+  function tstr(d){return pad2(d.getHours())+':'+pad2(d.getMinutes());}
+  function cmp(a,b){
+    if(sort==='global'){return (b.pop||0)-(a.pop||0);}
+    if(sort==='newest'){var d=a.days-b.days;return d!==0?d:((b.pop||0)-(a.pop||0));}
+    var d2=(ratings[b.id]||0)-(ratings[a.id]||0); return d2!==0?d2:((b.pop||0)-(a.pop||0));
+  }
+  function sortLabel(){return sort==='site'?'your rating':(sort==='global'?'global rating':'newest first');}
+
+  function ruleMatch(g){
+    if(!scope) return false;
+    if(selProv.size && !selProv.has(g.soft)) return false;
+    if(scope==='type' && !selType.has(g.gtype)) return false;
+    if(scope==='category' && !selCat.has(g.category)) return false;
+    return true;
+  }
+  function matching(){
+    if(!scope) return [];
+    return DATA.games.filter(function(g){
+      if(scope==='specific') return specific.has(g.id);
+      return ruleMatch(g);
+    });
+  }
+  // Membership = (rule OR always-include) minus excluded. Manual list is its own rule.
+  function inSlider(){
+    if(!scope) return [];
+    if(scope==='specific') return DATA.games.filter(function(g){return specific.has(g.id)});
+    return DATA.games.filter(function(g){ return (ruleMatch(g)||includes.has(g.id)) && !excluded.has(g.id); });
+  }
+  function byId(id){return DATA.games.find(function(x){return x.id===id})}
+  function exclInRule(){var n=0;excluded.forEach(function(id){var g=byId(id);if(g&&ruleMatch(g))n++});return n;}
+  function inclOutsideRule(){var n=0;includes.forEach(function(id){var g=byId(id);if(g&&!ruleMatch(g)&&!excluded.has(id))n++});return n;}
+  function realCount(m){
+    if(!scope) return 0;
+    if(scope==='specific') return specific.size;
+    if(selProv.size) return m.length; // narrowed to sample
+    if(scope==='all') return DATA.total;
+    if(scope==='type'){if(!selType.size)return 0;var s=0;selType.forEach(function(t){var f=TYPES.find(function(x){return x.name===t});if(f)s+=f.count;});return s||m.length;}
+    if(scope==='category'){if(!selCat.size)return 0;var s=0;selCat.forEach(function(c){var f=DATA.categories.find(function(x){return x.name===c});if(f)s+=(+f.count);});return s||m.length;}
+    return m.length;
+  }
+  function memberCount(m){ if(!scope)return 0; if(scope==='specific') return specific.size; return Math.max(0, realCount(m)-exclInRule()+inclOutsideRule()); }
+  function flaggedPins(){var m=inSlider(),ids={};m.forEach(function(g){ids[g.id]=1;});return Object.keys(pins).map(Number).filter(function(id){return !ids[id];});}
+  function gname(id){var g=byId(id);return g?g.name:'';}
+  function glabel(id){var g=byId(id);return g?(g.name+' ('+g.soft+')'):'';}
+  function ratingChanges(){var out=[];for(var id in ratings){if(ratings[id]!==(ratedBase[id]||0))out.push(+id);}return out;}
+  function anyRated(){var m=inSlider();for(var i=0;i<m.length;i++){if((ratings[m[i].id]||0)>0)return true;}return false;}
+  function scopeReady(){
+    if(!scope) return false;
+    if(scope==='type') return selType.size>0;
+    if(scope==='category') return selCat.size>0;
+    return true;
+  }
+
+  // ===== toast (one-step undo) =====
+  var toastT=null, toastUndo=null;
+  function showToast(msg,undoFn){
+    var t=$('#toast'); toastUndo=undoFn||null;
+    t.innerHTML=msg+(undoFn?' <span id="toastundo" style="color:#7ec7ff;cursor:pointer;margin-left:8px;text-decoration:underline">Undo</span>':'');
+    t.style.display='block';
+    clearTimeout(toastT); toastT=setTimeout(function(){t.style.display='none';},7000);
+  }
+
+  function syncBadge(m){
+    if(!scope) return '';
+    var auto=scope!=='specific';
+    return '<div style="'+(m||'')+'"><span class="pill" style="'+(auto?'color:#2EA447;border-color:#bfe3c8;background:#f2faf4':'color:#8a6d3b;border-color:#e8ddbb;background:#fbf8ec')+'"><i class="fas '+(auto?'fa-sync-alt':'fa-pen')+'"></i> '+(auto?'Auto-updates: games that start or stop matching your filters join or leave automatically (checked every 4 hours)':'Manual list: games change only when you edit. New casino games will NOT appear here automatically.')+'</span></div>';
+  }
+
+  // ===== scope area =====
+  function renderScopeArea(){
+    var el=$('#scopearea'),h='';
+    if(!scope){el.innerHTML='<div class="note" style="margin-bottom:8px"><i class="fas fa-arrow-up"></i> <b>What goes in this slider?</b> Pick a scope above to start: everything, a slice of the catalog, or a hand-picked list.</div>';return;}
+    if(scope==='all'){h='<div class="note" style="margin-bottom:8px"><i class="fas fa-layer-group"></i> All available games are included and kept in sync automatically. Pin a few to feature; the rest sort by your rating.</div>';}
+    else if(scope==='type'){h='<div class="fld"><div class="cap"><span>Choose game types</span></div><div class="opts">'+TYPES.map(function(t){return chipHtml('type',t.name,t.count);}).join('')+'</div></div>';}
+    else if(scope==='category'){h='<div class="fld"><div class="cap"><span>Choose categories</span></div><div class="opts" style="max-height:150px">'+DATA.categories.map(function(c){return chipHtml('cat',c.name,c.count);}).join('')+'</div></div>';}
+    else if(scope==='specific'){
+      if(seedOffer){h+='<div class="note" style="margin-bottom:8px;border-color:#3C8DBC"><i class="fas fa-magic"></i> Start your manual list from the current <b>'+nf(seedOffer.count)+'</b> games? <span data-seed="1" style="cursor:pointer;color:#3C8DBC;font-weight:600">Use current games'+(seedOffer.ids.length<seedOffer.count?' (top '+seedOffer.ids.length+')':'')+'</span> &nbsp;·&nbsp; <span data-seed="0" style="cursor:pointer;color:#3C8DBC">Start empty</span></div>';}
+      h+='<div class="note" style="margin-bottom:8px"><i class="fas fa-hand-pointer"></i> Hand-pick exact games. <b>'+specific.size+'</b> chosen so far. Open <b>Choose &amp; order games</b> to add and arrange them.</div>';
+      var paused=[];
+      if(selType.size)paused.push(selType.size+' type'+(selType.size>1?'s':''));
+      if(selCat.size)paused.push(selCat.size+(selCat.size>1?' categories':' category'));
+      if(selProv.size)paused.push(selProv.size+' provider'+(selProv.size>1?'s':''));
+      if(excluded.size)paused.push(excluded.size+' excluded');
+      if(includes.size)paused.push(includes.size+' added');
+      if(paused.length){h+='<div class="help" style="margin:0 0 6px">Your earlier setup ('+paused.join(', ')+') is kept but paused while you use a manual list. Switch back any time.</div>';}
+    }
+    h+=syncBadge('margin:2px 0 6px');
+    el.innerHTML=h;
+  }
+  function chipHtml(kind,name,count){
+    var sel=kind==='type'?selType:selCat; var on=sel.has(name);
+    return '<span class="opt'+(on?' on':'')+'" data-'+kind+'="'+esc(name)+'">'+name+' <span class="c">'+nf(count)+'</span></span>';
+  }
+  function esc(s){return (s||'').replace(/"/g,'&quot;');}
+  function renderProviders(){
+    $('#provopts').innerHTML=DATA.studios.map(function(s){var on=selProv.has(s.name);return '<span class="opt'+(on?' on':'')+'" data-prov="'+esc(s.name)+'">'+s.name+' <span class="c">'+nf(s.count)+'</span></span>';}).join('');
+    $('#provsel').textContent=selProv.size?(selProv.size+' selected'):'';
+  }
+
+  function renderSummary(){
+    var so=$('.setorder');
+    if(so){so.disabled=!scope;so.innerHTML='<i class="fas fa-sliders-h"></i> '+(scope==='specific'?'Choose &amp; order games':'Set game order');}
+    if(!scope){
+      $('#matchline').innerHTML='<i class="fas fa-arrow-up"></i> Choose what goes in this slider to see the game count.';
+      $('#flags').innerHTML=pill('Scope: not set',false)+pill('Providers (0)',false)+pill('Games (0)',false);
+      $('#kf').className='kf';
+      $('#ordright').textContent='no games yet';
+      $('#ordsub').textContent='Pick a scope first.';
+      return;
+    }
+    var m=matching(), rc=memberCount(m), fp=flaggedPins();
+    var typeCatN = scope==='type'?selType.size:(scope==='category'?selCat.size:(scope==='specific'?specific.size:0));
+    var lblMid = scope==='type'?('Types ('+selType.size+')'):(scope==='category'?('Categories ('+selCat.size+')'):(scope==='specific'?('Chosen ('+specific.size+')'):'Scope: all'));
+    var gamesLbl='Games ('+nf(rc)+')'+(fp.length?(' · '+fp.length+' need a look'):'');
+    var ml;
+    if(scope==='specific') ml='<i class="fas fa-hand-pointer"></i> <b>'+nf(rc)+'</b> game'+(rc===1?'':'s')+' chosen. Open <b>Choose &amp; order games</b> below to add more.';
+    else if(scope==='type'&&!selType.size) ml='<i class="fas fa-filter"></i> Choose at least one game type above.';
+    else if(scope==='category'&&!selCat.size) ml='<i class="fas fa-filter"></i> Choose at least one category above.';
+    else ml='<i class="fas fa-filter"></i> <b>'+nf(rc)+'</b> game'+(rc===1?'':'s')+' match'+(rc===1?'es':'')+' this slider'+(rc>m.length?(' <span class="lab">(showing '+m.length+' representative here)</span>'):'');
+    $('#matchline').innerHTML=ml;
+    $('#flags').innerHTML=pill('Providers ('+selProv.size+')',selProv.size>0)+pill(lblMid,scopeReady()&&(scope!=='specific'||specific.size>0))+pill(gamesLbl,rc>0,fp.length>0);
+    var kf=$('#kf');
+    if(fp.length&&!(scope==='specific'&&!specific.size)){kf.className='kf show';$('#kftext').innerHTML=fp.length+' pinned game'+(fp.length>1?'s no longer match':' no longer matches')+' your filters (e.g. <b>'+(glabel(fp[0])||'')+'</b>). Nothing was deleted.';}
+    else kf.className='kf';
+    var pinnedIds=Object.keys(pins).map(Number).filter(function(id){return inSlider().some(function(g){return g.id===id});});
+    var autoN=Math.max(0, rc - pinnedIds.length);
+    $('#ordright').textContent=(rc===0)?'no games yet':('Pinned '+pinnedIds.length+' · Auto '+nf(autoN)+((excluded.size&&scope!=='specific')?(' · Excluded '+excluded.size):''));
+    var sub=(rc===0)?'Choose games above, then pin your favourites.':('Pinned show first (this slider). '+nf(autoN)+' more auto-sorted by '+sortLabel()+'.');
+    if(lastLive&&scope!=='specific')sub+=' Next auto catalog check ~'+lastLive.next+'.';
+    $('#ordsub').textContent=sub;
+  }
+  function pill(txt,done,warn){var ic=warn?'<i class="fas fa-exclamation-triangle"></i>':(done?'<i class="fas fa-check" style="color:#2EA447"></i>':'<i class="far fa-circle" style="color:#b7c0c8"></i>');return '<span class="pill'+(warn?' warn':'')+'">'+ic+' '+txt+'</span>';}
+
+  function renderPreview(){
+    var row=$('#pvrow'), cap=$('#pvcap'); row.innerHTML='';
+    $('#pvname').textContent=$('#sname').value||'Slider Name';
+    if(!scope){for(var i=0;i<7;i++){var d0=document.createElement('div');d0.className='tile';row.appendChild(d0);}cap.textContent='Choose what goes in this slider to see the preview.';return;}
+    var m=inSlider();
+    if(!m.length){for(var j=0;j<7;j++){var d1=document.createElement('div');d1.className='tile';row.appendChild(d1);}
+      cap.textContent=(scope==='specific'&&!specific.size)?'Pick some games to see the preview.':((scope==='type'&&!selType.size)?'Choose at least one game type above.':((scope==='category'&&!selCat.size)?'Choose at least one category above.':'No games match these filters yet. Widen a filter above.'));return;}
+    var ordered=orderedGames(m);
+    ordered.slice(0,7).forEach(function(o,i){var d=document.createElement('div');d.className='tile';d.style.background=o.pinned?tints[i%tints.length]:'#23242f';var nm=document.createElement('div');nm.className='nm';nm.textContent=o.g.name;d.appendChild(nm);row.appendChild(d);});
+    cap.textContent='Colored = pinned. Dark = auto by '+sortLabel()+'. Real platform games, live order.';
+  }
+  function orderedGames(m){
+    var pinned=m.filter(function(g){return pins[g.id]}).sort(function(a,b){return pins[a.id]-pins[b.id]});
+    var tail=m.filter(function(g){return !pins[g.id]}).sort(cmp);
+    return pinned.map(function(g){return{g:g,pinned:true}}).concat(tail.map(function(g){return{g:g,pinned:false}}));
+  }
+  function renderLW(){var lw=$('#lw');if(lw.childElementCount)return;for(var i=0;i<11;i++)lw.appendChild(document.createElement('div'));}
+
+  // ===== modal =====
+  function qtokens(){var q=($('#msearch').value||'').toLowerCase().trim();return q?q.split(/\s+/):[];}
+  function qMatch(g,toks){if(!toks.length)return true;var hay=(g.name+' '+g.soft+' '+g.category+' '+g.id).toLowerCase();return toks.every(function(t){return hay.indexOf(t)>=0;});}
+  function viewMatch(g,toks){ if(mProv.size&&!mProv.has(g.soft))return false; if(mCat.size&&!mCat.has(g.category))return false; return qMatch(g,toks); }
+  function nameHtml(g){
+    var h=g.name;
+    if(g.days<30)h+='<span class="tagnew">NEW</span>';
+    if(NAMECOUNT[g.name]>1)h+=' <span class="lab" title="Several versions of this game exist. Check the ID.">'+NAMECOUNT[g.name]+' versions</span>';
+    return h;
+  }
+  function metaHtml(g){return g.soft+' · '+g.category+' · ID '+g.id+(g.rtp?(' · RTP '+fmtRtp(g.rtp)):'')+(g.pop?(' · Global rating '+fmtPop(g.pop)):'');}
+  function rateCell(g){
+    var chg=ratings[g.id]!==(ratedBase[g.id]||0);
+    return '<span class="lab" title="Affects ordering across your whole casino: every slider and the lobby. Saved with Apply Changes.">Your rating <i class="fas fa-globe" style="font-size:9px;color:#9aa7b0"></i></span><input class="rate" data-cr="'+g.id+'" value="'+ratings[g.id]+'" title="0-999, higher shows first. Affects ALL sliders and the lobby.">'+(chg?'<span class="lab" style="color:#e67e22">pending</span>':'');
+  }
+  function mrow(g,isP,idx,flag){
+    var d=document.createElement('div');d.className='gr'+(isP?' pin':'')+(flag?' flag':'');if(isP){d.setAttribute('draggable','true');d.setAttribute('data-gid',g.id);d.style.cursor='move';}
+    var lead=isP?'<i class="fas fa-grip-vertical" style="color:#9aa7b0"></i><span class="lab">#</span><input class="num" data-rank="'+g.id+'" value="'+(pins[g.id]||1)+'">':'<span class="lab" style="width:40px">#'+idx+'</span>';
+    var sw=isP?tints[((pins[g.id]||1)-1)%tints.length]:'#eef1f5';
+    var inc=(scope!=='specific')&&includes.has(g.id)&&!ruleMatch(g);
+    var fc=flag?'<span class="pill warn" style="font-size:10px;padding:1px 6px">Outside filters</span>':(inc?'<span class="pill" style="font-size:10px;padding:1px 6px;color:#31708f;border-color:#bce8f1;background:#f0f8fb">Added · outside filters</span>':'');
+    d.innerHTML=lead+'<div class="thumb" style="background:'+sw+'"></div><div style="flex:1;min-width:0"><div class="gn">'+nameHtml(g)+' '+fc+'</div><div class="gp">'+metaHtml(g)+'</div></div>'+((!isP&&!flag)?rateCell(g):'')+'<span class="act'+(isP?'':' p')+'" data-toggle="'+g.id+'"><i class="fas fa-thumbtack"></i> '+(isP?'Unpin':'Pin')+'</span>'+(scope==='specific'?'<i class="fas fa-times" title="Remove from slider" style="cursor:pointer;color:#c0392b;margin-left:5px" data-remove="'+g.id+'"></i>':((!isP&&!flag)?'<i class="fas fa-times" title="Exclude from this slider (auto-update will not add it back)" style="cursor:pointer;color:#c0392b;margin-left:5px" data-exclude="'+g.id+'"></i>':''));
+    return d;
+  }
+  function addRow(g){var d=document.createElement('div');d.className='gr';d.innerHTML='<div class="thumb" style="background:#eef1f5"></div><div style="flex:1;min-width:0"><div class="gn">'+nameHtml(g)+'</div><div class="gp">'+metaHtml(g)+'</div></div><span class="act p" data-add="'+g.id+'"><i class="fas fa-plus"></i> Add</span>';return d;}
+  function helpDiv(txt){var e=document.createElement('div');e.className='help';e.textContent=txt;return e;}
+  function renderMFilter(){
+    var el=document.getElementById('mfilter'); if(!el)return;
+    // Chips only offer providers/categories that exist inside this slider's scope.
+    // Specific mode filters the whole catalog, because that is where games get added from.
+    var pool = scope==='specific' ? DATA.games : inSlider();
+    var pc={}, cc={};
+    pool.forEach(function(g){pc[g.soft]=1;cc[g.category]=1;});
+    mProv.forEach(function(n){if(!pc[n])mProv.delete(n);});
+    mCat.forEach(function(n){if(!cc[n])mCat.delete(n);});
+    var provs=DATA.studios.filter(function(s){return pc[s.name]}).map(function(s){return '<span class="opt'+(mProv.has(s.name)?' on':'')+'" data-mprov="'+esc(s.name)+'">'+s.name+'</span>';}).join('');
+    var cats=DATA.categories.filter(function(c){return cc[c.name]}).map(function(c){return '<span class="opt'+(mCat.has(c.name)?' on':'')+'" data-mcat="'+esc(c.name)+'">'+c.name+'</span>';}).join('');
+    var clr=(mProv.size||mCat.size)?'<span class="lab" style="cursor:pointer;color:#3C8DBC" data-mclear="1">Clear filters</span>':'';
+    var capTxt = scope==='specific' ? 'Filter the catalog to find games to add' : 'Filter within the games of this slider';
+    el.innerHTML='<div class="cap" style="font-size:11px;color:#8895a0;margin-bottom:4px;display:flex;justify-content:space-between"><span>'+capTxt+'</span>'+clr+'</div>'+(provs?'<div class="opts" style="max-height:58px;margin-bottom:5px">'+provs+'</div>':'')+((cats&&(scope!=='category'||selCat.size>1))?'<div class="opts" style="max-height:58px">'+cats+'</div>':'');
+  }
+  function renderModal(){
+    if(!scope)return;
+    var toks=qtokens();
+    var qraw=($('#msearch').value||'').trim();
+    $('#mtitle').textContent = scope==='specific'?'Choose & order games':'Set game order';
+    $('#mftlab').textContent = scope==='specific'?'Add games below, pin the highlights; anything unpinned sorts by rating.':'Pin a short highlight list; the tail sorts itself.';
+    var sb=document.getElementById('msync');
+    if(sb)sb.innerHTML=syncBadge().replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
+    renderMFilter();
+    var m=inSlider();
+    var fp=flaggedPins();
+    var pinned=m.filter(function(g){return pins[g.id]}).sort(function(a,b){return pins[a.id]-pins[b.id]});
+    pinned.forEach(function(g,i){pins[g.id]=i+1;});
+    var tail=m.filter(function(g){return !pins[g.id]}).sort(cmp);
+    var rankMap={}; tail.forEach(function(g,i){rankMap[g.id]=pinned.length+i+1;});
+    var mp=$('#mpinned'),mt=$('#mtail');mp.innerHTML='';mt.innerHTML='';
+    // Pinned zone: immune to chips, but SEARCH finds pins too (state-aware).
+    var fpVis=fp.filter(function(id){var g=byId(id);return g&&qMatch(g,toks)});
+    fpVis.forEach(function(id){var g=byId(id);if(g)mp.appendChild(mrow(g,true,0,true));});
+    var pinVis=pinned.filter(function(g){return qMatch(g,toks)});
+    if(!pinned.length&&!fp.length){
+      mp.appendChild(helpDiv((scope==='specific'&&!specific.size)?'Add games below first, then pin your favourites here.':'No pinned games yet. Pin a few favourites to feature first.'));
+    }
+    pinVis.forEach(function(g){mp.appendChild(mrow(g,true));});
+    var pinHidden=(fp.length-fpVis.length)+(pinned.length-pinVis.length);
+    if(pinHidden>0)mp.appendChild(helpDiv(pinHidden+' pinned game'+(pinHidden>1?'s':'')+' hidden by your search.'));
+    // Tail respects search + chips; position numbers stay TRUE to the full order.
+    var tvis=tail.filter(function(g){return viewMatch(g,toks)});
+    lastTvis=tvis;
+    var filtered=!!(toks.length||mProv.size||mCat.size);
+    if(filtered&&tvis.length&&tvis.length<=1000){
+      var bb=document.createElement('div');bb.className='bulkbar';
+      bb.innerHTML='<span class="lab">Bulk:</span><span class="bb" data-bulkpin="1"><i class="fas fa-thumbtack"></i> Pin shown ('+tvis.length+')</span>'+(scope==='specific'?'<span class="bb danger" data-bulkrem="1"><i class="fas fa-times"></i> Remove shown ('+tvis.length+')</span>':'<span class="bb danger" data-bulkexcl="1"><i class="fas fa-ban"></i> Exclude shown ('+tvis.length+')</span>');
+      mt.appendChild(bb);
+    }
+    tvis.slice(0,tailShown).forEach(function(g){mt.appendChild(mrow(g,false,rankMap[g.id]));});
+    if(scope==='type'&&!selType.size)mt.appendChild(helpDiv('Choose at least one game type in the Games Filter to fill this list.'));
+    if(scope==='category'&&!selCat.size)mt.appendChild(helpDiv('Choose at least one category in the Games Filter to fill this list.'));
+    $('#mpc').textContent='('+(pinned.length+fp.length)+') · pinned, stay put';
+    $('#mtc').textContent='('+nf(Math.max(0,memberCount(m)-pinned.length))+') · by '+sortLabel();
+    // State-aware no-results
+    var nores=$('#mnores');
+    if(filtered&&tvis.length===0&&scopeReady()){
+      var exMatch=Array.from(excluded).map(byId).filter(Boolean).filter(function(g){return qMatch(g,toks)});
+      var outMatch=(scope!=='specific')?DATA.games.filter(function(g){return !ruleMatch(g)&&!includes.has(g.id)&&!excluded.has(g.id)&&qMatch(g,toks)}):[];
+      var msg;
+      if(pinVis.length||fpVis.length) msg='"'+qraw+'" is pinned above.';
+      else if(exMatch.length) msg='"'+qraw+'" is in your Excluded list below. Restore it to bring it back.';
+      else if(outMatch.length) msg=outMatch.length+' matching game'+(outMatch.length>1?'s are':' is')+' outside the current filters. Use "Add games outside these filters" below, or widen the filters.';
+      else msg='No games match. Search works on name, provider and game ID.';
+      nores.textContent=msg; nores.style.display='block';
+    } else nores.style.display='none';
+    // Tail paging: nothing is unreachable.
+    var mm=$('#mmore'); mm.innerHTML='';
+    var totalT=tvis.length;
+    if(totalT>tailShown){
+      mm.style.display='block';
+      mm.innerHTML=(filtered?('Showing '+tailShown+' of '+nf(totalT)+' matching. '):('Showing the top '+tailShown+' of '+nf(Math.max(0,memberCount(m)-pinned.length))+' by '+sortLabel()+'; the rest keep sorting automatically. '))+'<span class="morebtn" data-moretail="1">Show next 60</span>';
+    } else if(filtered&&totalT>0){mm.style.display='block';mm.textContent='Showing '+totalT+' of '+nf(Math.max(0,memberCount(m)-pinned.length))+' games (filtered).';}
+    else mm.style.display='none';
+    // Excluded zone: searchable, bulk-restorable; auto-update never re-adds these.
+    var xs=document.getElementById('mexcsec'),xz=document.getElementById('mexcluded');
+    if(scope!=='specific'&&excluded.size){
+      xs.style.display='block';xz.innerHTML='';
+      if(excluded.size>1){var rb=document.createElement('div');rb.className='bulkbar';rb.innerHTML='<span class="bb" data-restoreall="1"><i class="fas fa-undo"></i> Restore all ('+excluded.size+')</span>';xz.appendChild(rb);}
+      var exArr=Array.from(excluded).map(byId).filter(Boolean).filter(function(g){return qMatch(g,toks)});
+      exArr.slice(0,60).forEach(function(g){
+        var d=document.createElement('div');d.className='gr';d.style.opacity='.7';
+        var moot=!ruleMatch(g)?' <span class="lab">(outside filters anyway)</span>':'';
+        d.innerHTML='<div class="thumb" style="background:#eef1f5"></div><div style="flex:1;min-width:0"><div class="gn">'+nameHtml(g)+moot+'</div><div class="gp">'+metaHtml(g)+'</div></div><span class="act p" data-restore="'+g.id+'"><i class="fas fa-undo"></i> Restore</span>';
+        xz.appendChild(d);});
+      if(exArr.length>60)xz.appendChild(helpDiv('Showing 60 of '+exArr.length+'. Search to narrow.'));
+      if(!exArr.length)xz.appendChild(helpDiv('No excluded games match your search.'));
+      document.getElementById('mexc').textContent='('+excluded.size+') · never auto-added back';
+    } else {xs.style.display='none';}
+    // Add section
+    var addsec=document.getElementById('maddsec');
+    var wantAdd = scope==='specific' || (scope==='type'&&selType.size>0) || (scope==='category'&&selCat.size>0) || (scope==='all'&&selProv.size>0);
+    if(wantAdd){
+      var pv=(document.getElementById('pasteids')||{}).value||'';
+      if(!addsec){addsec=document.createElement('div');addsec.id='maddsec';$('#mtail').parentNode.insertBefore(addsec,document.getElementById('mnores'));}
+      addsec.style.display='block';
+      var extra=(scope==='specific')?('<div style="display:flex;gap:10px;align-items:center;margin:4px 0 6px;font-size:12px;flex-wrap:wrap"><label style="margin:0;font-weight:400"><input type="checkbox" id="pinadd"'+(pinAdd?' checked':'')+'> Pin as I add (keeps your adding order)</label><input id="pasteids" value="'+esc(pv)+'" placeholder="Or paste game IDs: 5023, 7871, …" style="flex:1;min-width:160px;font-size:11.5px;padding:3px 6px;border:1px solid #d2d6de;border-radius:3px"><span class="bb morebtn" data-pasteids="1" style="text-decoration:none;border:1px solid #cfdce5;border-radius:3px;padding:2px 8px;background:#f4f8fb">Add IDs</span></div>'):'';
+      addsec.innerHTML='<div class="zt" id="maddtitle">'+((scope==='specific')?'Add games <small>from the full catalog</small>':'Add games outside these filters <small>they stay in this slider, always</small>')+'</div>'+extra+'<div class="zone" id="madd"></div>';
+      var madd=document.getElementById('madd');
+      var pool;
+      if(scope==='specific'){
+        pool=DATA.games.filter(function(g){return !specific.has(g.id)&&viewMatch(g,toks)}).sort(cmp);
+        lastAddPool=pool;
+        if(!filtered)madd.appendChild(helpDiv('Top-rated games first. Search by name, provider or ID to jump anywhere in the '+nf(DATA.total)+'-game catalog.'));
+        if(filtered&&pool.length&&pool.length<=1000){var ab=document.createElement('div');ab.className='bulkbar';ab.innerHTML='<span class="bb" data-bulkadd="1"><i class="fas fa-plus"></i> Add all matching ('+pool.length+')</span>';madd.appendChild(ab);}
+        pool.slice(0,addShown).forEach(function(g){madd.appendChild(addRow(g))});
+        if(pool.length>addShown){var mo=helpDiv('');mo.innerHTML='Showing '+addShown+' of '+nf(pool.length)+' loaded'+(filtered?' matching':'')+'. <span class="morebtn" data-moreadd="1">Show more</span>';madd.appendChild(mo);}
+        if(!pool.length)madd.appendChild(helpDiv('No games match this filter. Clear it to see more.'));
+      } else {
+        if(!filtered){madd.appendChild(helpDiv('Search by name, provider or ID to add a game that is outside the current filters. It gets pinned and stays in this slider even after auto-updates.'));lastAddPool=[];}
+        else {
+          pool=DATA.games.filter(function(g){return !ruleMatch(g)&&!includes.has(g.id)&&!excluded.has(g.id)&&viewMatch(g,toks)}).sort(cmp);
+          lastAddPool=pool;
+          pool.slice(0,addShown).forEach(function(g){madd.appendChild(addRow(g))});
+          if(pool.length>addShown){var mo2=helpDiv('');mo2.innerHTML='Showing '+addShown+' of '+nf(pool.length)+' matching. <span class="morebtn" data-moreadd="1">Show more</span>';madd.appendChild(mo2);}
+          if(!pool.length)madd.appendChild(helpDiv('No games outside the filters match. Clear the search to go back.'));
+        }
+      }
+      // In Specific mode picking games is the main job: the add section goes on top.
+      var pinnedZt=$('#mpinned').previousElementSibling;
+      if(scope==='specific'){$('#mpinned').parentNode.insertBefore(addsec,pinnedZt);}
+      else {$('#mtail').parentNode.insertBefore(addsec,document.getElementById('mnores'));}
+    } else if(addsec){addsec.style.display='none';}
+    // Rating changes review (single save tier: everything commits with Apply Changes)
+    var rch=ratingChanges();
+    var rl=document.getElementById('mratechg');
+    if(rch.length){rl.style.display='block';rl.innerHTML='Rating changes: <b>'+rch.length+'</b> · saved with <b>Apply Changes</b>, they affect your whole casino · <span class="morebtn" data-revratings="1">Revert all</span>';}
+    else rl.style.display='none';
+    // Honest sort hints
+    var mh=$('#msorthint');
+    if(sort==='site'){mh.textContent=anyRated()?'Uses the rating you set per game (0-999). Unrated games fall back to Global rating.':'No games have your rating yet, so the order currently equals Global rating. Edit ratings below to take control.';}
+    else if(sort==='global'){mh.textContent='Uses the cross-brand Global rating score.';}
+    else {mh.textContent='Newest integrated games first.';}
+    // Pin-all (real hand-ordering for small sliders)
+    var pw=document.getElementById('pinallwrap'); var mcnt=memberCount(m);
+    if(mcnt>0&&mcnt<=100&&tail.length>0){pw.innerHTML='<span class="morebtn" data-pinall="1"><i class="fas fa-thumbtack"></i> Pin all '+mcnt+' games in the current order</span> <span class="lab">turns the whole slider into a hand-ordered list</span>';}
+    else if(mcnt>100){pw.innerHTML='<span class="lab">Hand-ordering every game is available for sliders up to 100 games. Pin the highlights; the rest stay sorted automatically.</span>';}
+    else pw.innerHTML='';
+  }
+
+  // Modal is a transaction: Cancel/X reverts, Apply order keeps (still staged until Apply Changes).
+  function snapState(){return {pins:JSON.parse(JSON.stringify(pins)),ratings:JSON.parse(JSON.stringify(ratings)),includes:new Set(includes),excluded:new Set(excluded),specific:new Set(specific),sort:sort,order:order};}
+  function restoreState(s){pins=s.pins;ratings=s.ratings;includes=s.includes;excluded=s.excluded;specific=s.specific;sort=s.sort;order=s.order;$('#sort').value=sort;$('#msort').value=sort;}
+  window.openModal=function(){if(!scope)return;snap=snapState();tailShown=CAP;addShown=50;$('#msearch').value='';mProv.clear();mCat.clear();$('#ov').classList.add('show');renderModal();};
+  window.closeModal=function(){if(snap){restoreState(snap);snap=null;}$('#ov').classList.remove('show');renderAll();};
+  window.saveOrder=function(){snap=null;$('#ov').classList.remove('show');dirty();renderAll();showToast('Order changes staged. They go live when you press Apply Changes.');};
+  window.keepFlagged=function(){var fp=flaggedPins();fp.forEach(function(id){includes.add(id);});dirty();renderAll();if($('#ov').classList.contains('show'))renderModal();showToast(fp.length+' game'+(fp.length>1?'s':'')+' will now always stay in this slider.');};
+  window.removeFlagged=function(){var fp=flaggedPins();var saved={};fp.forEach(function(id){saved[id]=pins[id];delete pins[id];});dirty();renderAll();showToast('Removed '+fp.length+' pinned game'+(fp.length>1?'s':'')+'.',function(){for(var id in saved){pins[id]=saved[id];}dirty();renderAll();});};
+
+  function renderAll(){renderProviders();renderScopeArea();renderSummary();renderPreview();}
+
+  // ===== apply / save =====
+  function doApply(){
+    if(saving)return;
+    var name=$('#sname').value.trim();
+    if(!name){setChip("Couldn't save · slider name is required · Retry",'err');$('#sname').style.borderColor='#dd4b39';return;}
+    $('#sname').style.borderColor='';
+    saving=true;setChip('Saving…','busy');
+    setTimeout(function(){if(saving)setChip('Games updating','busy');},800);
+    setTimeout(function(){
+      saving=false;dirtyFlag=false;
+      var now=new Date();var next=new Date(now.getTime()+4*3600*1000);
+      lastLive={at:tstr(now),next:tstr(next)};
+      for(var id in ratings)ratedBase[id]=ratings[id];
+      setChip('Live for players · saved '+lastLive.at,'done');
+      var v=$('#viewlive');if(v)v.style.display='inline';
+      if(EDIT){
+        if(HIST&&!HIST.dismissed){HIST.dismissed=true;histAck();}
+        LS.saved=snapSaved();LS.savedAt='today '+lastLive.at;lsSave(LS);
+        histRender();
+      }
+      renderSummary();
+      showToast('Saved. Your edits are live now.'+(scope!=='specific'?' New matching games join automatically; next catalog check ~'+lastLive.next+'.':''));
+    },1900);
+  }
+
+  // ===== events =====
+  document.addEventListener('click',function(e){
+    if(e.target.id==='toastundo'){if(toastUndo)toastUndo();toastUndo=null;$('#toast').style.display='none';return;}
+    if(e.target.id==='chip'&&e.target.className.indexOf('err')>=0){doApply();return;}
+    var sc=e.target.closest('#scope [data-s]');
+    if(sc){
+      var ns=sc.getAttribute('data-s');
+      if(ns===scope)return;
+      seedOffer=null;
+      if(ns==='specific'&&specific.size===0&&scope){
+        var mem=inSlider();
+        if(mem.length){seedOffer={ids:orderedGames(mem).map(function(o){return o.g.id}),count:memberCount(matching())};}
+      }
+      scope=ns;tailShown=CAP;
+      document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===ns)});
+      dirty();renderAll();return;
+    }
+    var sd=e.target.closest('[data-seed]');
+    if(sd){if(sd.getAttribute('data-seed')==='1'&&seedOffer){seedOffer.ids.forEach(function(id){specific.add(id)});dirty();}seedOffer=null;renderAll();return;}
+    var pr=e.target.closest('#provopts [data-prov]');
+    if(pr){var pn=pr.getAttribute('data-prov');selProv.has(pn)?selProv.delete(pn):selProv.add(pn);tailShown=CAP;dirty();renderAll();return;}
+    var tp=e.target.closest('#scopearea [data-type]');
+    if(tp){var tn=tp.getAttribute('data-type');selType.has(tn)?selType.delete(tn):selType.add(tn);tailShown=CAP;dirty();renderAll();return;}
+    var ct=e.target.closest('#scopearea [data-cat]');
+    if(ct){var cn=ct.getAttribute('data-cat');selCat.has(cn)?selCat.delete(cn):selCat.add(cn);tailShown=CAP;dirty();renderAll();return;}
+    var mo=e.target.closest('[data-mprov],[data-mcat]');
+    if(mo){if(mo.hasAttribute('data-mprov')){var mn=mo.getAttribute('data-mprov');mProv.has(mn)?mProv.delete(mn):mProv.add(mn);}else{var mc=mo.getAttribute('data-mcat');mCat.has(mc)?mCat.delete(mc):mCat.add(mc);}tailShown=CAP;addShown=50;renderModal();return;}
+    var mcl=e.target.closest('[data-mclear]');if(mcl){mProv.clear();mCat.clear();tailShown=CAP;renderModal();return;}
+    var ad=e.target.closest('[data-add]');
+    if(ad){var aid=+ad.getAttribute('data-add');
+      if(scope==='specific'){specific.add(aid);if(pinAdd)pins[aid]=(++order);}
+      else{includes.add(aid);pins[aid]=(++order);}
+      renderModal();dirty();renderAll();return;}
+    var rm=e.target.closest('[data-remove]');if(rm){var rid=+rm.getAttribute('data-remove');specific.delete(rid);delete pins[rid];renderModal();dirty();renderAll();return;}
+    var ex=e.target.closest('[data-exclude]');if(ex){var xid=+ex.getAttribute('data-exclude');if(includes.has(xid)){includes.delete(xid);}else{excluded.add(xid);}delete pins[xid];renderModal();dirty();renderAll();return;}
+    var rs=e.target.closest('[data-restore]');if(rs){excluded.delete(+rs.getAttribute('data-restore'));renderModal();dirty();renderAll();return;}
+    var ra=e.target.closest('[data-restoreall]');if(ra){var n=excluded.size;excluded.clear();renderModal();dirty();renderAll();showToast('Restored '+n+' excluded game'+(n>1?'s':'')+'.');return;}
+    var tg=e.target.closest('[data-toggle]');if(tg){var id=+tg.getAttribute('data-toggle');if(pins[id])delete pins[id];else pins[id]=(++order);renderModal();dirty();renderAll();return;}
+    var bp=e.target.closest('[data-bulkpin]');if(bp){lastTvis.forEach(function(g){if(!pins[g.id])pins[g.id]=(++order);});renderModal();dirty();renderAll();return;}
+    var bx=e.target.closest('[data-bulkexcl]');
+    if(bx){var ids=lastTvis.map(function(g){return g.id});ids.forEach(function(id){if(includes.has(id))includes.delete(id);else excluded.add(id);delete pins[id];});renderModal();dirty();renderAll();
+      showToast('Excluded '+ids.length+' games.',function(){ids.forEach(function(id){excluded.delete(id)});dirty();renderModal();renderAll();});return;}
+    var br=e.target.closest('[data-bulkrem]');
+    if(br){var ids2=lastTvis.map(function(g){return g.id});ids2.forEach(function(id){specific.delete(id);delete pins[id];});renderModal();dirty();renderAll();
+      showToast('Removed '+ids2.length+' games from the list.',function(){ids2.forEach(function(id){specific.add(id)});dirty();renderModal();renderAll();});return;}
+    var ba=e.target.closest('[data-bulkadd]');
+    if(ba){var ids3=lastAddPool.map(function(g){return g.id});ids3.forEach(function(id){if(scope==='specific'){specific.add(id);if(pinAdd)pins[id]=(++order);}else{includes.add(id);pins[id]=(++order);}});renderModal();dirty();renderAll();showToast('Added '+ids3.length+' games.');return;}
+    var mt2=e.target.closest('[data-moretail]');if(mt2){tailShown+=60;renderModal();return;}
+    var ma=e.target.closest('[data-moreadd]');if(ma){addShown+=50;renderModal();return;}
+    var pa=e.target.closest('[data-pinall]');
+    if(pa){var m2=inSlider();var tl=m2.filter(function(g){return !pins[g.id]}).sort(cmp);tl.forEach(function(g){pins[g.id]=(++order);});renderModal();dirty();renderAll();showToast('Pinned all '+m2.length+' games in the current order. Drag to rearrange.');return;}
+    var pi=e.target.closest('[data-pasteids]');
+    if(pi){var raw=(document.getElementById('pasteids')||{}).value||'';var idsIn=raw.split(/[^0-9]+/).filter(Boolean).map(Number);var ok=0;
+      idsIn.forEach(function(id){if(byId(id)){specific.add(id);if(pinAdd&&!pins[id])pins[id]=(++order);ok++;}});
+      renderModal();dirty();renderAll();showToast('Added '+ok+' of '+idsIn.length+' IDs'+(ok<idsIn.length?' (the rest were not found in the catalog)':'')+'.');return;}
+    var rr=e.target.closest('[data-revratings]');
+    if(rr){ratingChanges().forEach(function(id){ratings[id]=ratedBase[id]||0;});renderModal();renderSummary();renderPreview();return;}
+    if(e.target.id==='apply'||e.target.closest('#apply')){doApply();return;}
+    var cb=e.target.closest('.btn-cancel');
+    if(cb&&!e.target.closest('.m-ft')){
+      if(dirtyFlag&&!window.confirm('You have unsaved changes. Discard them and leave?'))return;
+      location.reload();return;
+    }
+    var nav=e.target.closest('aside a, aside li, .main-sidebar a');
+    if(nav&&dirtyFlag){if(!window.confirm('You have unsaved changes. Discard them and leave?')){e.preventDefault();e.stopPropagation();}return;}
+  });
+  document.addEventListener('change',function(e){
+    var cr=e.target.getAttribute&&e.target.getAttribute('data-cr');
+    if(cr){var id=+cr;var raw=e.target.value.trim();
+      if(raw===''){renderModal();return;} // emptied input = no change, never a silent 0
+      var v=parseInt(raw,10);
+      if(isNaN(v)){renderModal();return;}
+      ratings[id]=Math.max(0,Math.min(999,v));
+      dirty();renderModal();renderSummary();renderPreview();return;}
+    var rk=e.target.getAttribute&&e.target.getAttribute('data-rank');
+    if(rk){var id2=+rk;pins[id2]=(parseInt(e.target.value)||1)-0.5;renderModal();dirty();renderAll();return;}
+    if(e.target.id==='sort'){sort=e.target.value;$('#msort').value=sort;renderSummary();renderPreview();dirty();}
+    if(e.target.id==='msort'){sort=e.target.value;$('#sort').value=sort;renderModal();renderPreview();renderSummary();dirty();}
+    if(e.target.id==='pinadd'){pinAdd=e.target.checked;}
+    if(e.target.id==='copysel'){
+      var v=e.target.value;if(!v)return;
+      selProv.clear();selType.clear();selCat.clear();specific.clear();pins={};includes.clear();excluded.clear();order=1;seedOffer=null;
+      if(v==='top'){scope='type';selType.add('Slots');sort='site';}
+      else if(v==='prag'){scope='all';selProv.add('Pragmatic Play');sort='site';}
+      else if(v==='summer'){scope='specific';DATA.games.slice(0,48).forEach(function(g){specific.add(g.id)});DATA.games.slice(0,6).forEach(function(g,i){pins[g.id]=i+1;order=i+2;});}
+      document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
+      $('#sort').value=sort;$('#msort').value=sort;
+      dirty();renderAll();
+      showToast('Copied the setup of "'+e.target.options[e.target.selectedIndex].text+'". Nothing is saved yet.');
+      e.target.value='';
+    }
+  });
+  var dragId=null;
+  document.addEventListener('dragstart',function(e){var r=e.target.closest('#mpinned .gr');if(r&&r.getAttribute('data-gid')){dragId=+r.getAttribute('data-gid');try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','');}catch(_){}r.style.opacity='.5';}});
+  document.addEventListener('dragend',function(e){var r=e.target.closest('#mpinned .gr');if(r)r.style.opacity='';});
+  document.addEventListener('dragover',function(e){if(e.target.closest('#mpinned .gr')){e.preventDefault();}});
+  document.addEventListener('drop',function(e){var r=e.target.closest('#mpinned .gr');if(r&&dragId!=null){e.preventDefault();var t=+r.getAttribute('data-gid');if(t!==dragId){var arr=Object.keys(pins).map(Number).sort(function(a,b){return pins[a]-pins[b]});var fi=arr.indexOf(dragId),ti=arr.indexOf(t);if(fi>-1&&ti>-1){arr.splice(fi,1);arr.splice(ti,0,dragId);arr.forEach(function(id,i){pins[id]=i+1;});}}dragId=null;renderModal();dirty();renderAll();}});
+  $('#msearch').addEventListener('input',function(){tailShown=CAP;addShown=50;renderModal();});
+  $('#sname').addEventListener('input',function(){renderPreview();});
+  window.addEventListener('beforeunload',function(e){if(dirtyFlag||saving){e.preventDefault();e.returnValue='';}});
+
+  // ===== Edit mode (?edit): the SAME page hydrated with a saved slider + auto-update history =====
+  var EDIT=/[?&]edit/.test(location.search);
+  var HIST=null;
+  // Watermark simulation: the log is an event journal + "acknowledged up to" mark.
+  // Apply Changes and Dismiss advance the mark; leaving without saving does not.
+  var LSKEY='csproto_edit_v1';
+  function lsLoad(){try{return JSON.parse(localStorage.getItem(LSKEY)||'null')}catch(_){return null}}
+  function lsSave(o){try{localStorage.setItem(LSKEY,JSON.stringify(o))}catch(_){}}
+  var LS={ack:0};
+  function histAck(){LS.ack=Math.min(2,(LS.ack||0)+1);lsSave(LS);}
+  function snapSaved(){
+    var rdiff={};DATA.games.forEach(function(g){if((ratings[g.id]||0)!==(g.rating||0))rdiff[g.id]=ratings[g.id];});
+    return {scope:scope,selType:Array.from(selType),selCat:Array.from(selCat),selProv:Array.from(selProv),specific:Array.from(specific),pins:pins,excluded:Array.from(excluded),includes:Array.from(includes),sort:sort,rdiff:rdiff};
+  }
+  function restoreSaved(s){
+    scope=s.scope;selType=new Set(s.selType);selCat=new Set(s.selCat);selProv=new Set(s.selProv);specific=new Set(s.specific);
+    pins={};for(var k in s.pins)pins[+k]=s.pins[k];
+    excluded=new Set(s.excluded);includes=new Set(s.includes);sort=s.sort||'site';
+    for(var id in s.rdiff){ratings[+id]=s.rdiff[id];ratedBase[+id]=s.rdiff[id];}
+    var mx=0;for(var k2 in pins)mx=Math.max(mx,pins[k2]);order=mx+1;
+    $('#sort').value=sort;$('#msort').value=sort;
+    document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
+  }
+  function histRender(){
+    var hp=document.getElementById('histpanel');
+    if(!hp)return;
+    if(!EDIT){hp.style.display='none';return;}
+    if(!HIST){hp.innerHTML='<div class="help" style="margin:0 0 10px"><i class="fas fa-sync-alt"></i> Auto-update: no catalog changes since your last visit.</div>';hp.style.display='block';return;}
+    if(HIST.dismissed){hp.style.display='none';return;}
+    var shown=HIST.shown||20;
+    var pending=HIST.added.filter(function(g){return !pins[g.id]&&!excluded.has(g.id)});
+    var rows=HIST.added.slice(0,shown).map(function(g){
+      var done=pins[g.id]?'<span class="lab" style="color:#2EA447"><i class="fas fa-check"></i> Pinned</span>':(excluded.has(g.id)?'<span class="lab" style="color:#c0392b"><i class="fas fa-check"></i> Excluded</span>':'<span class="morebtn" data-histpin="'+g.id+'">Pin</span> <span class="lab">·</span> <span class="morebtn" data-histexcl="'+g.id+'" style="color:#c0392b">Exclude</span>');
+      return '<div style="display:flex;gap:8px;align-items:center;padding:3px 0;font-size:12px"><span class="tagnew" style="margin-left:0">+</span><span style="flex:1;min-width:0">'+g.name+' <span class="lab">'+g.soft+' · ID '+g.id+'</span></span>'+done+'</div>';
+    }).join('');
+    if(HIST.added.length>shown){rows+='<div class="help" style="margin:4px 0 0">Showing '+shown+' of '+HIST.added.length+' added. <span class="morebtn" data-histmore="1">Show next 20</span></div>';}
+    rows+=HIST.removed.map(function(x){
+      return '<div style="display:flex;gap:8px;align-items:center;padding:3px 0;font-size:12px;opacity:.75"><span style="font-size:9px;font-weight:700;color:#fff;background:#c0392b;border-radius:3px;padding:1px 5px">&minus;</span><span style="flex:1;min-width:0">'+x.name+' <span class="lab">'+x.soft+'</span></span><span class="lab">'+x.reason+'</span></div>';
+    }).join('');
+    var bulk=pending.length>1?('<span class="bb" data-histpinall="1" style="cursor:pointer;color:#3C8DBC;border:1px solid #cfdce5;border-radius:3px;padding:2px 8px;background:#fff;font-size:11.5px"><i class="fas fa-thumbtack"></i> Pin all '+pending.length+'</span> '):'';
+    hp.innerHTML='<div style="border:1px solid #cfe3d4;background:#f4faf5;border-radius:4px;padding:9px 12px;margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;flex-wrap:wrap"><span><i class="fas fa-sync-alt" style="color:#2EA447"></i> <b>Since your last visit</b> (auto-update, '+HIST.when+'): <b>+'+HIST.added.length+'</b> added, <b>'+HIST.removed.length+'</b> removed</span>'+
+      '<span style="white-space:nowrap">'+bulk+'<span class="morebtn" data-histtoggle="1">'+(HIST.open?'Hide':'Show')+' details</span> &nbsp; <span class="morebtn" data-histdismiss="1" style="color:#8895a0;text-decoration:none">Dismiss</span></span></div>'+
+      (HIST.open?('<div style="margin-top:6px;border-top:1px solid #dcebe0;padding-top:6px;max-height:230px;overflow-y:auto">'+rows+'</div>'):'')+
+      '</div>';
+    hp.style.display='block';
+  }
+  document.addEventListener('click',function(e){
+    var hpin=e.target.closest('[data-histpin]');
+    if(hpin){pins[+hpin.getAttribute('data-histpin')]=(++order);dirty();histRender();renderAll();return;}
+    var hx=e.target.closest('[data-histexcl]');
+    if(hx){excluded.add(+hx.getAttribute('data-histexcl'));dirty();histRender();renderAll();return;}
+    var ht=e.target.closest('[data-histtoggle]');
+    if(ht){HIST.open=!HIST.open;histRender();return;}
+    var hm=e.target.closest('[data-histmore]');
+    if(hm){HIST.shown=(HIST.shown||20)+20;histRender();return;}
+    var hpa=e.target.closest('[data-histpinall]');
+    if(hpa){
+      var pend=HIST.added.filter(function(g){return !pins[g.id]&&!excluded.has(g.id)});
+      pend.forEach(function(g){pins[g.id]=(++order);});
+      dirty();histRender();renderAll();
+      showToast('Pinned all '+pend.length+' newly added games.',function(){pend.forEach(function(g){delete pins[g.id];});dirty();histRender();renderAll();});
+      return;}
+    var hd=e.target.closest('[data-histdismiss]');
+    if(hd){HIST.dismissed=true;histAck();histRender();return;}
+    var drs=e.target.closest('#demoreset');
+    if(drs){try{localStorage.removeItem(LSKEY)}catch(_){}location.reload();return;}
+    var dsw=e.target.closest('#demoswitch');
+    if(dsw){
+      if(dirtyFlag&&!window.confirm('You have unsaved changes. Discard them and switch view?'))return;
+      dirtyFlag=false;saving=false;
+      location.search=EDIT?'':'?edit';return;
+    }
+  });
+
+  // init
+  $('#totalgames').textContent=nf(DATA.total);
+  renderLW();
+  var ds=document.getElementById('demoswitch');
+  if(ds)ds.innerHTML='<i class="fas fa-random"></i> demo: '+(EDIT?'open Create view':'open Edit view');
+  if(EDIT){
+    document.getElementById('pagetitle').textContent='Edit Custom Slider';
+    document.getElementById('crumbtitle').textContent='Edit Custom Slider';
+    document.title=document.title.replace('Add Custom Slider','Edit Custom Slider');
+    LS=lsLoad()||{ack:0};
+    var slots=DATA.games.filter(function(g){return g.gtype==='Slots'}).sort(function(a,b){return (b.pop||0)-(a.pop||0)});
+    if(LS.saved){
+      // A previous Apply Changes persisted the operator's config: restore it exactly.
+      restoreSaved(LS.saved);
+    } else {
+      // Hydrate as a saved slider: scope=type Slots, 3 pins with saved ratings, 1 exclude. Nothing may reset (MDP-63 core case).
+      scope='type';selType.add('Slots');
+      document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')==='type')});
+      slots.slice(0,3).forEach(function(g,i){pins[g.id]=i+1;order=i+2;ratings[g.id]=900-i*50;ratedBase[g.id]=900-i*50;});
+      if(slots[3])excluded.add(slots[3].id);
+    }
+    lastLive={at:LS.savedAt||'yesterday 14:32',next:tstr(new Date(new Date().getTime()+4*3600*1000))};
+    // Journal stages: ack 0 = the big yesterday delta; ack 1 = a small fresh delta; ack 2+ = nothing new.
+    // Auto-update log: joins come from the live catalog sample; leaves are games no longer in the active catalog.
+    // Big-delta case: a fresh provider/new releases can bring dozens of games at once, so the log pages + scrolls.
+    if(!LS.ack){
+      HIST={when:'yesterday 14:32',open:true,dismissed:false,shown:20,
+        added:slots.filter(function(g){return g.days<60&&!pins[g.id]&&!excluded.has(g.id)}),
+        removed:[{name:'Wolf Gold 2',soft:'Pragmatic Play',reason:'provider disabled it'},
+                 {name:'Blazing Fruits 40',soft:'Spinomenal',reason:'stopped matching your filters'}]};
+    } else if(LS.ack===1){
+      HIST={when:'today 06:13',open:true,dismissed:false,shown:20,
+        added:slots.filter(function(g){return !pins[g.id]&&!excluded.has(g.id)}).slice(0,3),removed:[]};
+    } else {HIST=null;}
+    setChip('Up to date · last saved '+(LS.savedAt||'yesterday 14:32'),'done');
+    var vl=$('#viewlive');if(vl)vl.style.display='inline';
+    dirtyFlag=false;
+    histRender();
+    var dsw=document.getElementById('demoswitch');
+    if(dsw)dsw.insertAdjacentHTML('afterend',' <span id="demoreset" style="cursor:pointer;color:#8895a0;font-size:11.5px;border:1px dashed #c5ced4;border-radius:3px;padding:1px 6px"><i class="fas fa-history"></i> demo: reset history</span>');
+  }
+  renderAll();
+})();
+</script>
+</body>
+</html>
