@@ -192,8 +192,8 @@
           <div class="kf" id="kf"><i class="fas fa-exclamation-triangle"></i><div style="flex:1" id="kftext"></div><span class="a" onclick="keepFlagged()">Keep them in (always include)</span><span class="a" onclick="removeFlagged()">Remove</span></div>
           <div class="note"><i class="fas fa-info-circle"></i> Changing a filter never deletes your games. <b>Pin &amp; order</b> affect this slider only; <b>your rating</b> changes the game across your whole casino.</div>
 
-          <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Sort the rest by</label>
-            <select id="sort"><option value="site">Your rating (unrated fall back to Global)</option><option value="global">Global rating (all brands)</option><option value="newest">Newest releases first</option></select></div>
+          <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Order</label>
+            <span style="font-size:12.5px"><b>Pinned first</b>, the rest by your <b>Company Rating</b> <span class="lab">(also saved to your Casino Config)</span></span></div>
           <div class="ordsum"><div class="row"><span style="font-weight:600">Game order</span><span class="lab" id="ordright"></span></div>
             <div class="sub" id="ordsub"></div><button class="setorder" onclick="openModal()"><i class="fas fa-sliders-h"></i> Set game order</button></div>
 
@@ -218,8 +218,8 @@
     <div class="m-hd"><span class="t" id="mtitle">Set game order</span><span id="msync" style="margin-left:10px"></span><i class="fas fa-times" title="Close and discard changes made in this window" style="cursor:pointer;color:#8895a0" onclick="closeModal()"></i></div>
     <div class="m-bd">
       <div class="note" style="margin-top:0"><i class="fas fa-info-circle"></i> Pin your featured games on top; the rest fill in automatically by your rating. Editing a game's rating changes it across your whole casino.</div>
-      <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Sort the rest by</label>
-        <select id="msort"><option value="site">Your rating (unrated fall back to Global)</option><option value="global">Global rating (all brands)</option><option value="newest">Newest releases first</option></select>
+      <div class="sortline"><label style="font-size:12.5px;color:#5b6b77">Auto order</label>
+        <span style="font-size:12.5px">By your <b>Company Rating</b></span>
         <span class="help" id="msorthint" style="margin-top:0">Uses the rating you set per game.</span></div>
       <div id="mratechg" class="help" style="display:none"></div>
       <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="msearch" placeholder="Search games by name"></div>
@@ -272,11 +272,9 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
   function pad2(n){return (n<10?'0':'')+n;}
   function tstr(d){return pad2(d.getHours())+':'+pad2(d.getMinutes());}
   function cmp(a,b){
-    if(sort==='global'){return (b.pop||0)-(a.pop||0);}
-    if(sort==='newest'){var d=a.days-b.days;return d!==0?d:((b.pop||0)-(a.pop||0));}
     var d2=(ratings[b.id]||0)-(ratings[a.id]||0); return d2!==0?d2:((b.pop||0)-(a.pop||0));
   }
-  function sortLabel(){return sort==='site'?'your rating':(sort==='global'?'global rating':'newest first');}
+  function sortLabel(){return 'your Company Rating';}
 
   function ruleMatch(g){
     if(!scope) return false;
@@ -434,7 +432,7 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
   function metaHtml(g){return g.soft+' · '+g.category+' · ID '+g.id+(g.rtp?(' · RTP '+fmtRtp(g.rtp)):'')+(g.pop?(' · Global rating '+fmtPop(g.pop)):'');}
   function rateCell(g){
     var chg=ratings[g.id]!==(ratedBase[g.id]||0);
-    return '<span class="lab" title="Affects ordering across your whole casino: every slider and the lobby. Saved with Apply Changes.">Your rating <i class="fas fa-globe" style="font-size:9px;color:#9aa7b0"></i></span><input class="rate" data-cr="'+g.id+'" value="'+ratings[g.id]+'" title="0-999, higher shows first. Affects ALL sliders and the lobby.">'+(chg?'<span class="lab" style="color:#e67e22">pending</span>':'');
+    return '<span class="lab" title="Company Rating: orders games across your whole casino and is saved to your Casino Config with Apply Changes.">Company Rating <i class="fas fa-globe" style="font-size:9px;color:#9aa7b0"></i></span><input class="rate" data-cr="'+g.id+'" value="'+ratings[g.id]+'" title="Company Rating 0-999, higher shows first. Also updates your Casino Config.">'+(chg?'<span class="lab" style="color:#e67e22">pending</span>':'');
   }
   function mrow(g,isP,idx,flag){
     var d=document.createElement('div');d.className='gr'+(isP?' pin':'')+(flag?' flag':'');if(isP){d.setAttribute('draggable','true');d.setAttribute('data-gid',g.id);d.style.cursor='move';}
@@ -578,9 +576,7 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     else rl.style.display='none';
     // Honest sort hints
     var mh=$('#msorthint');
-    if(sort==='site'){mh.textContent=anyRated()?'Uses the rating you set per game (0-999). Unrated games fall back to Global rating.':'No games have your rating yet, so the order currently equals Global rating. Edit ratings below to take control.';}
-    else if(sort==='global'){mh.textContent='Uses the cross-brand Global rating score.';}
-    else {mh.textContent='Newest integrated games first.';}
+    mh.textContent=anyRated()?'Uses the Company Rating you set per game (0-999, higher first). Edits here are also saved to your Casino Config.':'No games have a Company Rating yet, so the list follows catalog popularity for now. Set ratings below to take control.';
     // Pin-all (real hand-ordering for small sliders)
     var pw=document.getElementById('pinallwrap'); var mcnt=memberCount(m);
     if(mcnt>0&&mcnt<=100&&tail.length>0){pw.innerHTML='<span class="morebtn" data-pinall="1"><i class="fas fa-thumbtack"></i> Pin all '+mcnt+' games in the current order</span> <span class="lab">turns the whole slider into a hand-ordered list</span>';}
@@ -590,7 +586,7 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
 
   // Modal is a transaction: Cancel/X reverts, Apply order keeps (still staged until Apply Changes).
   function snapState(){return {pins:JSON.parse(JSON.stringify(pins)),ratings:JSON.parse(JSON.stringify(ratings)),includes:new Set(includes),excluded:new Set(excluded),specific:new Set(specific),sort:sort,order:order};}
-  function restoreState(s){pins=s.pins;ratings=s.ratings;includes=s.includes;excluded=s.excluded;specific=s.specific;sort=s.sort;order=s.order;$('#sort').value=sort;$('#msort').value=sort;}
+  function restoreState(s){pins=s.pins;ratings=s.ratings;includes=s.includes;excluded=s.excluded;specific=s.specific;sort=s.sort;order=s.order;}
   window.openModal=function(){if(!scope)return;snap=snapState();tailShown=CAP;addShown=50;$('#msearch').value='';mProv.clear();mCat.clear();$('#ov').classList.add('show');renderModal();};
   window.closeModal=function(){if(snap){restoreState(snap);snap=null;}$('#ov').classList.remove('show');renderAll();};
   window.saveOrder=function(){snap=null;$('#ov').classList.remove('show');dirty();renderAll();showToast('Order changes staged. They go live when you press Apply Changes.');};
@@ -700,8 +696,6 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
       dirty();renderModal();renderSummary();renderPreview();return;}
     var rk=e.target.getAttribute&&e.target.getAttribute('data-rank');
     if(rk){var id2=+rk;pins[id2]=(parseInt(e.target.value)||1)-0.5;renderModal();dirty();renderAll();return;}
-    if(e.target.id==='sort'){sort=e.target.value;$('#msort').value=sort;renderSummary();renderPreview();dirty();}
-    if(e.target.id==='msort'){sort=e.target.value;$('#sort').value=sort;renderModal();renderPreview();renderSummary();dirty();}
     if(e.target.id==='pinadd'){pinAdd=e.target.checked;}
     if(e.target.id==='copysel'){
       var v=e.target.value;if(!v)return;
@@ -710,7 +704,6 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
       else if(v==='prag'){scope='all';selProv.add('Pragmatic Play');sort='site';}
       else if(v==='summer'){scope='specific';DATA.games.slice(0,48).forEach(function(g){specific.add(g.id)});DATA.games.slice(0,6).forEach(function(g,i){pins[g.id]=i+1;order=i+2;});}
       document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
-      $('#sort').value=sort;$('#msort').value=sort;
       dirty();renderAll();
       showToast('Copied the setup of "'+e.target.options[e.target.selectedIndex].text+'". Nothing is saved yet.');
       e.target.value='';
@@ -745,7 +738,6 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     excluded=new Set(s.excluded);includes=new Set(s.includes);sort=s.sort||'site';
     for(var id in s.rdiff){ratings[+id]=s.rdiff[id];ratedBase[+id]=s.rdiff[id];}
     var mx=0;for(var k2 in pins)mx=Math.max(mx,pins[k2]);order=mx+1;
-    $('#sort').value=sort;$('#msort').value=sort;
     document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
   }
   function histRender(){
