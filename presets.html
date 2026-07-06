@@ -94,7 +94,7 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
   <div class="crumb"><i class="fas fa-th" style="color:#7b8a95"></i> CMS <span style="color:#c2ccd3">›</span> Game Presets <span id="demoreset" style="cursor:pointer;color:#8895a0;font-size:11.5px;border:1px dashed #c5ced4;border-radius:3px;padding:1px 6px;margin-left:8px"><i class="fas fa-history"></i> demo: reset</span></div>
 
   <div class="note"><i class="fas fa-info-circle" style="margin-top:2px"></i>
-    <span><b>Prototype.</b> A preset is a game list you build once and reuse anywhere a game list is needed: lobby categories (Game Filter) and achievements. Editing a preset updates every place that links it. The interface will still change.</span></div>
+    <span><b>Prototype.</b> A preset is a game list you build once and reuse anywhere a game list is needed: lobby categories (Game Filter) and achievements. Editing a preset updates every place that links it; if you only want the change in one place, save your edits as a new preset. The interface will still change.</span></div>
 
   <div class="box">
     <div class="box-hd"><span class="t">Your presets</span><span class="sp" style="flex:1"></span><button class="btn btn-green" onclick="openEditor(null)"><i class="fas fa-plus"></i> New preset</button></div>
@@ -116,12 +116,11 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
           <div class="lab" style="margin-bottom:8px">Game Filter · Specific games mode</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
             <span class="lab">Use a preset:</span>
-            <span class="pill" data-use="cat" data-mode="link"><i class="fas fa-link"></i> Link (stays in sync)</span>
-            <span class="pill" data-use="cat" data-mode="copy"><i class="far fa-copy"></i> Insert a copy</span>
             <select id="catsel" style="height:30px;border:1px solid var(--border);border-radius:3px;font-size:12.5px"></select>
+            <span class="pill" data-use="cat"><i class="fas fa-link"></i> Use preset</span>
           </div>
           <div class="linked" id="catlinked" style="margin-top:10px"></div>
-          <div class="help">Linked preset games behave like the slider's own list: excludes still apply, pins stay on top, and preset updates show up in the change log as actor "preset update".</div>
+          <div class="help">Linked preset games behave like the slider's own list: excludes still apply, pins stay on top, and preset updates show up in the change log as actor "preset update". Need a different list? Edit the games right here, then either update the preset (every linked place follows) or save your edits as a new preset.</div>
         </div>
 
         <div class="linkcard">
@@ -129,12 +128,11 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
           <div class="lab" style="margin-bottom:8px">Gamification · eligible games list</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
             <span class="lab">Use a preset:</span>
-            <span class="pill" data-use="ach" data-mode="link"><i class="fas fa-link"></i> Link (stays in sync)</span>
-            <span class="pill" data-use="ach" data-mode="copy"><i class="far fa-copy"></i> Insert a copy</span>
             <select id="achsel" style="height:30px;border:1px solid var(--border);border-radius:3px;font-size:12.5px"></select>
+            <span class="pill" data-use="ach"><i class="fas fa-link"></i> Use preset</span>
           </div>
           <div class="linked" id="achlinked" style="margin-top:10px"></div>
-          <div class="help">One promo, many achievements: link the same preset to each achievement instead of rebuilding the list. Edit the preset once, every achievement follows.</div>
+          <div class="help">One promo, many achievements: link the same preset to each achievement instead of rebuilding the list. Edit the preset once, every achievement follows; a diverging edit becomes a new preset, never an unmanaged copy.</div>
         </div>
 
       </div>
@@ -155,7 +153,7 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
     <div class="help">Search-first, same as the Game Filter editor. Paste a list of game IDs into the search box to add in bulk.</div>
   </div>
   <div class="m-ft"><span class="lab" id="musedin"></span>
-    <div><button class="btn btn-flat" onclick="closeEditor()">Cancel</button> <button class="btn btn-green" id="psave" onclick="savePreset()">Save preset</button></div></div>
+    <div><button class="btn btn-flat" onclick="closeEditor()">Cancel</button> <button class="btn btn-flat" id="psavenew" style="display:none" onclick="saveAsNew()"><i class="far fa-copy"></i> Save as new preset</button> <button class="btn btn-green" id="psave" onclick="savePreset()">Save preset</button></div></div>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -174,8 +172,9 @@ var seed=[
  {id:2,name:'Pragmatic Top',games:GAMES.filter(function(g){return g.soft==='Pragmatic Play'}).slice(0,16).map(function(g){return g.id}),usedCat:['Provider Spotlight'],usedAch:[],upd:'yesterday'},
  {id:3,name:'Live Favourites',games:pad(GAMES.filter(function(g){return /live|roulette|blackjack|baccarat/i.test(g.name+g.category)}).map(function(g){return g.id}),10),usedCat:[],usedAch:['Table Master'],upd:'today'}
 ];
-var presets=JSON.parse(JSON.stringify(seed)), nextId=4, editing=null, cur=null;
+var presets=JSON.parse(JSON.stringify(seed)), nextId=4, editing=null, cur=null, useCtx=null;
 var links={cat:null,ach:null};
+var CONSUMER_LABEL={cat:'Summer Push',ach:'Spin the Summer x50'};
 
 function byId(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null}
 
@@ -205,26 +204,43 @@ function renderLinks(){
     var el=document.getElementById(k+'linked'), L=links[k];
     if(!L){el.style.display='none';return}
     var p=presets.filter(function(x){return x.id===L.pid})[0];
+    if(!p){links[k]=null;el.style.display='none';return}
     el.style.display='block';
-    if(L.mode==='link'&&p){
-      el.innerHTML='<i class="fas fa-link" style="color:#2EA447"></i> Linked to preset <b>'+p.name+'</b> · '+p.games.length+' games · updates automatically when the preset changes · <span class="a" data-detach="'+k+'">Detach (keep games as a copy)</span>';
-    } else {
-      el.innerHTML='<i class="far fa-copy" style="color:#8895a0"></i> Copied <b>'+(L.snapName)+'</b> · '+L.count+' games at insert time · edits to the preset will NOT affect this list · <span class="a" data-detach="'+k+'">Remove</span>';
-    }
+    el.innerHTML='<i class="fas fa-link" style="color:#2EA447"></i> Linked to preset <b>'+p.name+'</b> · '+p.games.length+' games · updates automatically when the preset changes · <span class="a" data-edituse="'+k+'"><i class="fas fa-pen" style="font-size:9px"></i> Edit games</span> · <span class="a" data-detach="'+k+'">Remove</span>';
   });
 }
 
-// editor
-window.openEditor=function(id){
-  editing=id;
-  if(id){var p=presets.filter(function(x){return x.id===id})[0];cur={name:p.name,games:p.games.slice()};$('#mtitle').textContent='Edit preset';
+// editor (ctx = consumer key when opened from a "use" spot: edit-on-use flow)
+window.openEditor=function(id,ctx){
+  editing=id;useCtx=ctx||null;
+  var sn=document.getElementById('psavenew');
+  if(id){var p=presets.filter(function(x){return x.id===id})[0];cur={name:p.name,games:p.games.slice()};$('#mtitle').textContent=useCtx?('Edit games of "'+p.name+'"'):'Edit preset';
     var refs=p.usedCat.length+p.usedAch.length;
-    $('#musedin').textContent=refs?('Saving updates '+refs+' linked place'+(refs>1?'s':'')+' (category and achievement lists).'):'Not linked anywhere yet.';}
-  else {cur={name:'',games:[]};$('#mtitle').textContent='New preset';$('#musedin').textContent='';}
+    $('#musedin').textContent=refs?('"Update preset" changes '+refs+' linked place'+(refs>1?'s':'')+' (category and achievement lists).'):'Not linked anywhere yet.';
+    $('#psave').textContent=useCtx?('Update preset'+(refs>1?' (syncs '+refs+' places)':'')):'Save preset';
+    sn.style.display=useCtx?'inline-block':'none';}
+  else {cur={name:'',games:[]};$('#mtitle').textContent='New preset';$('#musedin').textContent='';$('#psave').textContent='Save preset';sn.style.display='none';}
   $('#pname').value=cur.name;$('#psearch').value='';
   renderEditor();$('#ov').classList.add('show');
 }
-window.closeEditor=function(){$('#ov').classList.remove('show');editing=null;cur=null}
+window.closeEditor=function(){$('#ov').classList.remove('show');editing=null;cur=null;useCtx=null}
+window.saveAsNew=function(){
+  var nm=$('#pname').value.trim();
+  if(!nm){toast('Give the new preset a name first.');return}
+  if(!cur.games.length){toast('Add at least one game.');return}
+  var orig=presets.filter(function(x){return x.id===editing})[0];
+  if(orig&&nm===orig.name)nm+=' (new)';
+  var np={id:nextId++,name:nm,games:cur.games.slice(),usedCat:[],usedAch:[],upd:'just now'};
+  presets.push(np);
+  if(useCtx){
+    var label=CONSUMER_LABEL[useCtx];
+    if(orig){var arr=(useCtx==='cat'?orig.usedCat:orig.usedAch);var ix=arr.indexOf(label);if(ix>-1)arr.splice(ix,1);}
+    (useCtx==='cat'?np.usedCat:np.usedAch).push(label);
+    links[useCtx]={pid:np.id,mode:'link',snapName:np.name,count:np.games.length};
+  }
+  closeEditor();renderList();
+  toast('New preset "'+nm+'" created and linked here. '+(orig?('Other places keep "'+orig.name+'".'):''));
+}
 function renderEditor(){
   var z=$('#pgames');z.innerHTML='';
   $('#pcount').textContent='('+cur.games.length+')';
@@ -265,7 +281,7 @@ window.savePreset=function(){
 }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-edit],[data-dup],[data-del],[data-add],[data-rm],[data-up],[data-down],[data-use],[data-detach],#demoreset');
+  var t=e.target.closest('[data-edit],[data-dup],[data-del],[data-add],[data-rm],[data-up],[data-down],[data-use],[data-edituse],[data-detach],#demoreset');
   if(!t)return;
   if(t.id==='demoreset'){presets=JSON.parse(JSON.stringify(seed));nextId=4;links={cat:null,ach:null};renderList();toast('Demo reset.');return}
   var v;
@@ -277,20 +293,27 @@ document.addEventListener('click',function(e){
   if(v=t.getAttribute('data-up')){var i=cur.games.indexOf(+v);if(i>0){cur.games.splice(i-1,0,cur.games.splice(i,1)[0]);renderEditor()}return}
   if(v=t.getAttribute('data-down')){var i2=cur.games.indexOf(+v);if(i2>-1&&i2<cur.games.length-1){cur.games.splice(i2+1,0,cur.games.splice(i2,1)[0]);renderEditor()}return}
   if(v=t.getAttribute('data-use')){
-    var mode=t.getAttribute('data-mode');
     var sel=document.getElementById(v==='cat'?'catsel':'achsel');
     var pid=+sel.value;var p=presets.filter(function(x){return x.id===pid})[0];
     if(!p)return;
-    links[v]={pid:pid,mode:mode,snapName:p.name,count:p.games.length};
-    if(mode==='link'){(v==='cat'?p.usedCat:p.usedAch).indexOf(v==='cat'?'Summer Push':'Spin the Summer x50')<0&&(v==='cat'?p.usedCat:p.usedAch).push(v==='cat'?'Summer Push':'Spin the Summer x50');}
+    var label=CONSUMER_LABEL[v];
+    var prev=links[v]&&presets.filter(function(x){return x.id===links[v].pid})[0];
+    if(prev){var pa=(v==='cat'?prev.usedCat:prev.usedAch);var pix=pa.indexOf(label);if(pix>-1)pa.splice(pix,1);}
+    links[v]={pid:pid,mode:'link',snapName:p.name,count:p.games.length};
+    var ua=(v==='cat'?p.usedCat:p.usedAch);
+    if(ua.indexOf(label)<0)ua.push(label);
     renderList();
-    toast(mode==='link'?('Linked "'+p.name+'". This list now follows the preset.'):('Inserted a copy of "'+p.name+'". It will not follow future preset edits.'));
+    toast('Linked "'+p.name+'". This list now follows the preset.');
+    return}
+  if(v=t.getAttribute('data-edituse')){
+    var L2=links[v];
+    if(L2)openEditor(L2.pid,v);
     return}
   if(v=t.getAttribute('data-detach')){
     var L=links[v];
     if(L&&L.mode==='link'){var p2=presets.filter(function(x){return x.id===L.pid})[0];
       if(p2){var arr=(v==='cat'?p2.usedCat:p2.usedAch);var nm=(v==='cat'?'Summer Push':'Spin the Summer x50');var ix=arr.indexOf(nm);if(ix>-1)arr.splice(ix,1);}}
-    links[v]=null;renderList();toast('Detached. The games stay where they are as a plain list.');return}
+    links[v]=null;renderList();toast('Removed the preset from this list.');return}
 });
 $('#psearch').addEventListener('input',renderEditor);
 renderList();
