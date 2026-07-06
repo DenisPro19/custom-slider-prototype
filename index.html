@@ -34,6 +34,8 @@
   .dev{width:32px;height:30px;border:1px solid var(--border);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:#7b8a95;background:#fff;cursor:pointer}
   .dev.on{background:var(--blue);color:#fff;border-color:var(--blue)}
   .cols{display:grid;grid-template-columns:472px 1fr;min-height:600px}
+  .cols.nopv{grid-template-columns:1fr}.cols.nopv .right{display:none}
+  .cols.nopv .left{border-right:none;max-width:860px}
   .left{border-right:1px solid #eef1f4;padding:16px;display:flex;flex-direction:column}
   .right{background:var(--preview-bg);padding:16px 18px}
   .sect-t{font-size:15px;font-weight:600;margin:0 0 10px}
@@ -148,7 +150,8 @@
     <div class="card">
       <div class="card-hd">
         <div class="bc"><i class="fas fa-th" style="color:#7b8a95"></i> Edit Page <span class="sep">›</span> <span class="dim">Casino Lobby</span> <span class="sep">›</span> Custom Slider</div>
-        <div class="pv-ctl"><span class="zoom">100% <i class="fas fa-angle-down" style="font-size:10px;margin-left:4px"></i></span>
+        <div class="pv-ctl"><span class="zoom" id="pvhide" style="cursor:pointer" title="Collapse the live preview to give the editor the full width. You mostly need the preview at the final check."><i class="fas fa-eye-slash" style="font-size:10px;margin-right:4px"></i>Hide preview</span>
+          <span class="zoom">100% <i class="fas fa-angle-down" style="font-size:10px;margin-left:4px"></i></span>
           <span class="dev on"><i class="fas fa-desktop"></i></span><span class="dev"><i class="fas fa-mobile-alt"></i></span><span class="dev"><i class="fas fa-th-large"></i></span></div>
       </div>
       <div class="cols">
@@ -728,6 +731,10 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
   document.addEventListener('dragend',function(e){var r=e.target.closest('#mpinned .gr');if(r)r.style.opacity='';});
   document.addEventListener('dragover',function(e){if(e.target.closest('#mpinned .gr')){e.preventDefault();}});
   document.addEventListener('drop',function(e){var r=e.target.closest('#mpinned .gr');if(r&&dragId!=null){e.preventDefault();var t=+r.getAttribute('data-gid');if(t!==dragId){var arr=Object.keys(pins).map(Number).sort(function(a,b){return pins[a]-pins[b]});var fi=arr.indexOf(dragId),ti=arr.indexOf(t);if(fi>-1&&ti>-1){arr.splice(fi,1);arr.splice(ti,0,dragId);arr.forEach(function(id,i){pins[id]=i+1;});}}dragId=null;renderModal();dirty();renderAll();}});
+  document.getElementById('pvhide').addEventListener('click',function(){
+    var c=document.querySelector('.cols');var off=c.classList.toggle('nopv');
+    this.innerHTML=off?'<i class="fas fa-eye" style="font-size:10px;margin-right:4px"></i>Show preview':'<i class="fas fa-eye-slash" style="font-size:10px;margin-right:4px"></i>Hide preview';
+  });
   $('#msearch').addEventListener('input',function(){tailShown=CAP;addShown=50;renderModal();});
   $('#sname').addEventListener('input',function(){renderPreview();});
   window.addEventListener('beforeunload',function(e){if(dirtyFlag||saving){e.preventDefault();e.returnValue='';}});

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Presets — Vue 2 Admin Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+:root{--header-blue:#3C8DBC;--logo-blue:#367FA9;--sidebar-bg:#222D32;--sidebar-text:#B8C7CE;--body-bg:#ECF0F5;--blue:#3C8DBC;--green:#00a65a;--border:#d2d6de}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Source Sans Pro','Helvetica Neue',sans-serif;font-size:14px;background:var(--body-bg);color:#333}
+.main-header{position:fixed;top:0;left:0;right:0;height:50px;z-index:50;display:flex}
+.main-header .logo{width:230px;background:var(--logo-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300}
+.main-header .logo b{font-weight:700}
+.main-header .nav{flex:1;background:var(--header-blue);display:flex;align-items:center;color:#fff;padding:0 14px;gap:16px}
+.main-header .nav .sp{flex:1}
+.main-sidebar{position:fixed;top:50px;left:0;bottom:0;width:230px;background:var(--sidebar-bg);padding-top:8px;overflow:auto}
+.main-sidebar .hdr{padding:10px 14px;font-size:11px;color:#4b646f;text-transform:uppercase}
+.main-sidebar a{display:flex;align-items:center;gap:10px;padding:10px 14px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;border-left:3px solid transparent}
+.main-sidebar a:hover{background:#1e282c;color:#fff}
+.main-sidebar a.active{background:#1e282c;color:#fff;border-left-color:var(--header-blue)}
+.main-sidebar a.sub{padding-left:34px;font-size:13px}
+.wrap{margin-left:230px;margin-top:50px;padding:14px 18px 60px;min-height:calc(100vh - 50px)}
+h1{font-size:21px;font-weight:400;margin-bottom:2px}
+.crumb{font-size:12px;color:#7b8a95;margin-bottom:14px}
+.note{border:1px solid #d9e5ec;background:#f4f9fc;border-radius:3px;padding:9px 12px;font-size:12.5px;color:#41626f;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
+.box{background:#fff;border:1px solid var(--border);border-top:3px solid var(--header-blue);border-radius:3px;margin-bottom:18px}
+.box-hd{padding:10px 14px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;gap:10px}
+.box-hd .t{font-size:16px;font-weight:600}
+.box-bd{padding:14px}
+.btn{border:1px solid transparent;border-radius:3px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-flat{background:#fff;border-color:var(--border);color:#444}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+table.list{width:100%;border-collapse:collapse}
+table.list th{font-size:11.5px;text-transform:uppercase;color:#7b8a95;text-align:left;padding:6px 10px;border-bottom:2px solid #eef1f4}
+table.list td{padding:9px 10px;border-bottom:1px solid #f2f4f7;font-size:13.5px;vertical-align:middle}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #cfdce5;background:#f6fafc;border-radius:12px;padding:2px 9px;font-size:11.5px;color:#41626f;margin:1px 3px 1px 0}
+.chip.ach{border-color:#e0d3ef;background:#faf6ff;color:#6a4d8f}
+.lab{font-size:11.5px;color:#8895a0}
+.a{color:var(--blue);cursor:pointer;font-size:12.5px}
+.a.red{color:#c0392b}
+.used{font-size:12px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:90}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:4px;width:760px;max-width:100%;max-height:calc(100vh - 80px);display:flex;flex-direction:column}
+.m-hd{padding:12px 16px;border-bottom:1px solid #eef1f4;display:flex;align-items:center}
+.m-hd .t{font-size:16px;font-weight:600;flex:1}
+.m-bd{padding:14px 16px;overflow:auto}
+.m-ft{padding:12px 16px;border-top:1px solid #eef1f4;display:flex;justify-content:space-between;align-items:center}
+input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;padding:0 10px;font-size:13.5px;font-family:inherit;width:100%}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:3px;height:34px;padding:0 10px;margin:10px 0 6px}
+.search input{border:none;outline:none;flex:1;height:30px;font-size:13.5px;font-family:inherit}
+.gr{display:flex;align-items:center;gap:9px;padding:6px 8px;border:1px solid #eef1f4;border-radius:3px;margin-bottom:4px;background:#fff}
+.gr .nm{flex:1;min-width:0;font-size:13px}
+.gr .nm .lab{display:block}
+.zone{max-height:250px;overflow:auto;border:1px dashed #dfe5ea;border-radius:3px;padding:6px;background:#fbfcfd}
+.zt{font-size:12px;font-weight:700;color:#5b6b77;text-transform:uppercase;margin:12px 0 6px}
+.num{width:34px;height:24px;border:1px solid var(--border);border-radius:3px;text-align:center;font-size:12px}
+.help{font-size:12px;color:#7b8a95;margin-top:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:5px 10px;font-size:12.5px;cursor:pointer;border:1px solid var(--border);background:#fff}
+.pill.on{background:var(--header-blue);color:#fff;border-color:var(--header-blue)}
+.linkcard{border:1px solid #dfe5ea;border-radius:4px;padding:12px;background:#fff}
+.linked{border:1px solid #cfe3d4;background:#f4faf5;border-radius:4px;padding:9px 12px;font-size:12.5px;display:none}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#2d3a42;color:#fff;padding:9px 16px;border-radius:4px;font-size:13px;display:none;z-index:99}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="main-header">
+  <div class="logo"><span><b>sw-demo</b>-template71</span></div>
+  <div class="nav"><i class="fas fa-bars"></i><span class="sp"></span><i class="far fa-bell"></i><i class="far fa-user"></i><i class="fas fa-sign-out-alt"></i></div>
+</header>
+<aside class="main-sidebar">
+  <div class="hdr">Main navigation</div>
+  <a><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+  <a><i class="fas fa-list"></i> Reports</a>
+  <a><i class="fas fa-exchange-alt"></i> Transactions</a>
+  <a><i class="fas fa-users"></i> Players</a>
+  <a><i class="fas fa-dice"></i> Casino</a>
+  <a><i class="fas fa-trophy"></i> Gamification</a>
+  <a class="active"><i class="fas fa-th"></i> CMS</a>
+  <a class="sub">Menu Control</a>
+  <a class="sub">Personalized Categories</a>
+  <a class="sub active" style="border-left-color:transparent;background:#1e282c;color:#fff">Game Presets</a>
+  <a class="sub">Page Setup</a>
+</aside>
+
+<div class="wrap">
+  <h1>Game Presets</h1>
+  <div class="crumb"><i class="fas fa-th" style="color:#7b8a95"></i> CMS <span style="color:#c2ccd3">›</span> Game Presets <span id="demoreset" style="cursor:pointer;color:#8895a0;font-size:11.5px;border:1px dashed #c5ced4;border-radius:3px;padding:1px 6px;margin-left:8px"><i class="fas fa-history"></i> demo: reset</span></div>
+
+  <div class="note"><i class="fas fa-info-circle" style="margin-top:2px"></i>
+    <span><b>Prototype.</b> A preset is a game list you build once and reuse anywhere a game list is needed: lobby categories (Game Filter) and achievements. Editing a preset updates every place that links it. The interface will still change.</span></div>
+
+  <div class="box">
+    <div class="box-hd"><span class="t">Your presets</span><span class="sp" style="flex:1"></span><button class="btn btn-green" onclick="openEditor(null)"><i class="fas fa-plus"></i> New preset</button></div>
+    <div class="box-bd" style="padding:0 0 4px">
+      <table class="list"><thead><tr><th style="width:26%">Name</th><th style="width:10%">Games</th><th>Used in</th><th style="width:14%">Updated</th><th style="width:16%"></th></tr></thead>
+      <tbody id="plist"></tbody></table>
+      <div class="help" style="padding:8px 12px">Deleting a preset that is still linked somewhere is blocked: detach it everywhere first.</div>
+    </div>
+  </div>
+
+  <div class="box" style="border-top-color:#00a65a">
+    <div class="box-hd"><span class="t">Where you will use presets</span></div>
+    <div class="box-bd">
+      <div class="help" style="margin:0 0 10px">The same "Use a preset" control appears in every editor that takes a game list. Two demo consumers below: click a preset to insert it.</div>
+      <div class="grid2">
+
+        <div class="linkcard">
+          <div style="font-weight:600;margin-bottom:2px"><i class="fas fa-th" style="color:#3C8DBC"></i> Category: "Summer Push"</div>
+          <div class="lab" style="margin-bottom:8px">Game Filter · Specific games mode</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span class="lab">Use a preset:</span>
+            <span class="pill" data-use="cat" data-mode="link"><i class="fas fa-link"></i> Link (stays in sync)</span>
+            <span class="pill" data-use="cat" data-mode="copy"><i class="far fa-copy"></i> Insert a copy</span>
+            <select id="catsel" style="height:30px;border:1px solid var(--border);border-radius:3px;font-size:12.5px"></select>
+          </div>
+          <div class="linked" id="catlinked" style="margin-top:10px"></div>
+          <div class="help">Linked preset games behave like the slider's own list: excludes still apply, pins stay on top, and preset updates show up in the change log as actor "preset update".</div>
+        </div>
+
+        <div class="linkcard">
+          <div style="font-weight:600;margin-bottom:2px"><i class="fas fa-trophy" style="color:#6a4d8f"></i> Achievement: "Spin the Summer x50"</div>
+          <div class="lab" style="margin-bottom:8px">Gamification · eligible games list</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span class="lab">Use a preset:</span>
+            <span class="pill" data-use="ach" data-mode="link"><i class="fas fa-link"></i> Link (stays in sync)</span>
+            <span class="pill" data-use="ach" data-mode="copy"><i class="far fa-copy"></i> Insert a copy</span>
+            <select id="achsel" style="height:30px;border:1px solid var(--border);border-radius:3px;font-size:12.5px"></select>
+          </div>
+          <div class="linked" id="achlinked" style="margin-top:10px"></div>
+          <div class="help">One promo, many achievements: link the same preset to each achievement instead of rebuilding the list. Edit the preset once, every achievement follows.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov"><div class="modal">
+  <div class="m-hd"><span class="t" id="mtitle">New preset</span><i class="fas fa-times" style="cursor:pointer;color:#8895a0" onclick="closeEditor()"></i></div>
+  <div class="m-bd">
+    <div class="lab" style="margin-bottom:4px">Preset name</div>
+    <input type="text" id="pname" placeholder="e.g. Summer Fruits">
+    <div class="zt">Games in this preset <small class="lab" id="pcount"></small></div>
+    <div class="zone" id="pgames"></div>
+    <div class="zt">Add games</div>
+    <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="psearch" placeholder="Search the catalog by name, provider or ID"></div>
+    <div class="zone" id="pool" style="max-height:200px"></div>
+    <div class="help">Search-first, same as the Game Filter editor. Paste a list of game IDs into the search box to add in bulk.</div>
+  </div>
+  <div class="m-ft"><span class="lab" id="musedin"></span>
+    <div><button class="btn btn-flat" onclick="closeEditor()">Cancel</button> <button class="btn btn-green" id="psave" onclick="savePreset()">Save preset</button></div></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const GAMES = [{"id":1000917,"name":"Joker's Jewels","soft":"Pragmatic Play","category":"Reels Slots","pop":1883125},{"id":1000834,"name":"Gates of Olympus","soft":"Pragmatic Play","category":"Reels Slots","pop":1456767},{"id":1028095,"name":"Gates of Olympus 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":1072232},{"id":1007440,"name":"Big Bass Splash","soft":"Pragmatic Play","category":"Reels Slots","pop":1048970},{"id":1001846,"name":"5 Lions Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":910252},{"id":1000825,"name":"Big Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":849588},{"id":1027123,"name":"Big Bass Halloween","soft":"Pragmatic Play","category":"Reels Slots","pop":729361},{"id":1007466,"name":"Sugar Rush","soft":"Pragmatic Play","category":"Reels Slots","pop":686702},{"id":1029367,"name":"Sugar Rush 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":660241},{"id":1000891,"name":"Sweet Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":639998},{"id":1030943,"name":"Sweet Bonanza 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":603832},{"id":1006434,"name":"Gold Party","soft":"Pragmatic Play","category":"Reels Slots","pop":500880},{"id":1000839,"name":"Madame Destiny Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":495664},{"id":1013896,"name":"Cosmic Cash","soft":"Pragmatic Play","category":"Progressive Slots","pop":425880},{"id":1023026,"name":"Big Bass Amazon Xtreme","soft":"Pragmatic Play","category":"Reels Slots","pop":420620},{"id":1021117,"name":"Rabbit Garden","soft":"Pragmatic Play","category":"Reels Slots","pop":411251},{"id":1006146,"name":"Christmas Big Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":410073},{"id":1000812,"name":"Roulette 1 - Azure","soft":"Pragmatic Play Live","category":"Roulette","pop":409378},{"id":1000874,"name":"Master Joker","soft":"Pragmatic Play","category":"Reels Slots","pop":407310},{"id":1019330,"name":"PIZZA PIZZA PIZZA","soft":"Pragmatic Play","category":"Reels Slots","pop":387393},{"id":1030258,"name":"Big Bass - Secrets of the Golden Lake","soft":"Pragmatic Play","category":"Reels Slots","pop":384400},{"id":1073533,"name":"Lord of the Keys","soft":"Platipus Gaming","category":"Progressive Slots","pop":346725},{"id":1000828,"name":"Congo Cash","soft":"Pragmatic Play","category":"Progressive Slots","pop":337720},{"id":1022769,"name":"Zeus vs Hades - Gods of War","soft":"Pragmatic Play","category":"Reels Slots","pop":335576},{"id":1024348,"name":"Roleta Brasileira","soft":"Playtech","category":"Roulette","pop":330411},{"id":1027873,"name":"Big Bass Christmas Bash","soft":"Pragmatic Play","category":"Reels Slots","pop":304674},{"id":1000865,"name":"Great Rhino Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":287785},{"id":1006007,"name":"Book of Egypt","soft":"Platipus Gaming","category":"Reels Slots","pop":278240},{"id":1004362,"name":"Bigger Bass Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":276829},{"id":1004645,"name":"Starlight Princess","soft":"Pragmatic Play","category":"Reels Slots","pop":274045},{"id":1000937,"name":"Diamond Strike","soft":"Pragmatic Play","category":"Progressive Slots","pop":270902},{"id":1020373,"name":"Club Tropicana","soft":"Pragmatic Play","category":"Reels Slots","pop":263019},{"id":1027315,"name":"Starlight Princess 1000","soft":"Pragmatic Play","category":"Reels Slots","pop":262426},{"id":1035405,"name":"Big Bass Vegas Double Down Deluxe","soft":"Pragmatic Play","category":"Reels Slots","pop":260650},{"id":1000815,"name":"Mega Roulette","soft":"Pragmatic Play Live","category":"Roulette","pop":246592},{"id":1000924,"name":"Chilli Heat","soft":"Pragmatic Play","category":"Progressive Slots","pop":240058},{"id":1018068,"name":"Big Bass Bonanza - Keeping it Reel","soft":"Pragmatic Play","category":"Reels Slots","pop":237327},{"id":1001511,"name":"Buffalo King Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":235644},{"id":1001049,"name":"Floating Dragon","soft":"Pragmatic Play","category":"Reels Slots","pop":232896},{"id":1050203,"name":"Gates of Olympus Super Scatter","soft":"Pragmatic Play","category":"Reels Slots","pop":232300},{"id":1022268,"name":"Little Witchy","soft":"Platipus Gaming","category":"Reels Slots","pop":223567},{"id":1045650,"name":"The Biggest Win X50","soft":"Mascot Gaming","category":"Reels Slots","pop":222397},{"id":1021157,"name":"Big Bass - Hold & Spinner","soft":"Pragmatic Play","category":"Reels Slots","pop":217706},{"id":1028975,"name":"Big Bass Floats my Boat","soft":"Pragmatic Play","category":"Reels Slots","pop":199743},{"id":1019135,"name":"Bigger Bass Blizzard - Christmas Catch","soft":"Pragmatic Play","category":"Reels Slots","pop":188244},{"id":1007342,"name":"Cleocatra","soft":"Pragmatic Play","category":"Reels Slots","pop":178694},{"id":1000853,"name":"The Dog House Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":178250},{"id":1000896,"name":"The Dog House","soft":"Pragmatic Play","category":"Reels Slots","pop":176976},{"id":1076421,"name":"Chicken Road 2","soft":"InOut","category":"Crash Game","pop":174679},{"id":1000827,"name":"Christmas Carol Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":164293},{"id":1005310,"name":"Big Juan","soft":"Pragmatic Play","category":"Progressive Slots","pop":164210},{"id":1000902,"name":"Mustang Gold","soft":"Pragmatic Play","category":"Progressive Slots","pop":159921},{"id":1005340,"name":"Bonus Mania","soft":"KA Gaming","category":"Reels Slots","pop":159088},{"id":1000821,"name":"Lobby Blackjack","soft":"Pragmatic Play Live","category":"Black Jack","pop":156823},{"id":1030767,"name":"Aviator","soft":"Spribe","category":"Crash Game","pop":155039},{"id":1031906,"name":"Big Bass Mission Fishin'","soft":"Pragmatic Play","category":"Reels Slots","pop":155017},{"id":1000868,"name":"Wild West Gold","soft":"Pragmatic Play","category":"Reels Slots","pop":154580},{"id":1027929,"name":"Sugar Rush Xmas","soft":"Pragmatic Play","category":"Reels Slots","pop":152961},{"id":1023054,"name":"Wisdom of Athena","soft":"Pragmatic Play","category":"Reels Slots","pop":150685},{"id":1036862,"name":"Big Bass Halloween 2","soft":"Pragmatic Play","category":"Reels Slots","pop":147111},{"id":1007348,"name":"Wild West Gold Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":144493},{"id":1004998,"name":"Zeus the Thunderer","soft":"Mascot Gaming","category":"Reels Slots","pop":140000},{"id":1020386,"name":"Wild Wild Riches Megaways","soft":"Pragmatic Play","category":"Megaways Slots","pop":138291},{"id":1000835,"name":"Gems Bonanza","soft":"Pragmatic Play","category":"Reels Slots","pop":136590},{"id":1034850,"name":"Royalty Of Olympus","soft":"Barbara Bang","category":"Reels Slots","pop":134903},{"id":1005944,"name":"Sweet Bonanza CandyLand","soft":"Pragmatic Play Live","category":"Show Games","pop":134643},{"id":1006935,"name":"Queenie","soft":"Pragmatic Play","category":"Progressive Slots","pop":133904},{"id":1004999,"name":"Fruits of Luxor","soft":"Mascot Gaming","category":"Fruit Slots","pop":130759},{"id":1073523,"name":"Coin Blaze","soft":"Platipus Gaming","category":"Progressive Slots","pop":128232},{"id":1000988,"name":"Sweet Bonanza Xmas","soft":"Pragmatic Play","category":"Reels Slots","pop":127818}];
+function $(s){return document.querySelector(s)}
+function nf(n){return (+n).toLocaleString()}
+function toast(t){var x=$('#toast');x.textContent=t;x.style.display='block';clearTimeout(x._t);x._t=setTimeout(function(){x.style.display='none'},3200)}
+
+// seed presets from the catalog sample (pad thin matches with top games so demo lists look real)
+function pad(ids,n){var out=ids.slice(0,n);GAMES.forEach(function(g){if(out.length<n&&out.indexOf(g.id)<0)out.push(g.id)});return out.slice(0,n)}
+var seed=[
+ {id:1,name:'Summer Fruits',games:pad(GAMES.filter(function(g){return /fruit|juicy|sweet/i.test(g.name)}).map(function(g){return g.id}),14),usedCat:['Summer Push'],usedAch:['Spin the Summer x50','Fruit Frenzy Week'],upd:'2 days ago'},
+ {id:2,name:'Pragmatic Top',games:GAMES.filter(function(g){return g.soft==='Pragmatic Play'}).slice(0,16).map(function(g){return g.id}),usedCat:['Provider Spotlight'],usedAch:[],upd:'yesterday'},
+ {id:3,name:'Live Favourites',games:pad(GAMES.filter(function(g){return /live|roulette|blackjack|baccarat/i.test(g.name+g.category)}).map(function(g){return g.id}),10),usedCat:[],usedAch:['Table Master'],upd:'today'}
+];
+var presets=JSON.parse(JSON.stringify(seed)), nextId=4, editing=null, cur=null;
+var links={cat:null,ach:null};
+
+function byId(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null}
+
+function renderList(){
+  var tb=$('#plist');tb.innerHTML='';
+  presets.forEach(function(p){
+    var used='';
+    p.usedCat.forEach(function(c){used+='<span class="chip"><i class="fas fa-th" style="font-size:9px"></i> '+c+'</span>'});
+    p.usedAch.forEach(function(a){used+='<span class="chip ach"><i class="fas fa-trophy" style="font-size:9px"></i> '+a+'</span>'});
+    if(!used)used='<span class="lab">not used yet</span>';
+    var refs=p.usedCat.length+p.usedAch.length;
+    var del=refs?'<span class="lab" title="Detach this preset everywhere first">delete <i class="fas fa-lock" style="font-size:9px"></i></span>':'<span class="a red" data-del="'+p.id+'">delete</span>';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="font-weight:600">'+p.name+'</td><td>'+p.games.length+'</td><td class="used">'+used+'</td><td class="lab">'+p.upd+'</td>'+
+      '<td style="text-align:right;white-space:nowrap"><span class="a" data-edit="'+p.id+'">edit</span> · <span class="a" data-dup="'+p.id+'">duplicate</span> · '+del+'</td>';
+    tb.appendChild(tr);
+  });
+  ['catsel','achsel'].forEach(function(id){
+    var s=document.getElementById(id);s.innerHTML='';
+    presets.forEach(function(p){var o=document.createElement('option');o.value=p.id;o.textContent=p.name+' ('+p.games.length+')';s.appendChild(o)});
+  });
+  renderLinks();
+}
+
+function renderLinks(){
+  ['cat','ach'].forEach(function(k){
+    var el=document.getElementById(k+'linked'), L=links[k];
+    if(!L){el.style.display='none';return}
+    var p=presets.filter(function(x){return x.id===L.pid})[0];
+    el.style.display='block';
+    if(L.mode==='link'&&p){
+      el.innerHTML='<i class="fas fa-link" style="color:#2EA447"></i> Linked to preset <b>'+p.name+'</b> · '+p.games.length+' games · updates automatically when the preset changes · <span class="a" data-detach="'+k+'">Detach (keep games as a copy)</span>';
+    } else {
+      el.innerHTML='<i class="far fa-copy" style="color:#8895a0"></i> Copied <b>'+(L.snapName)+'</b> · '+L.count+' games at insert time · edits to the preset will NOT affect this list · <span class="a" data-detach="'+k+'">Remove</span>';
+    }
+  });
+}
+
+// editor
+window.openEditor=function(id){
+  editing=id;
+  if(id){var p=presets.filter(function(x){return x.id===id})[0];cur={name:p.name,games:p.games.slice()};$('#mtitle').textContent='Edit preset';
+    var refs=p.usedCat.length+p.usedAch.length;
+    $('#musedin').textContent=refs?('Saving updates '+refs+' linked place'+(refs>1?'s':'')+' (category and achievement lists).'):'Not linked anywhere yet.';}
+  else {cur={name:'',games:[]};$('#mtitle').textContent='New preset';$('#musedin').textContent='';}
+  $('#pname').value=cur.name;$('#psearch').value='';
+  renderEditor();$('#ov').classList.add('show');
+}
+window.closeEditor=function(){$('#ov').classList.remove('show');editing=null;cur=null}
+function renderEditor(){
+  var z=$('#pgames');z.innerHTML='';
+  $('#pcount').textContent='('+cur.games.length+')';
+  cur.games.forEach(function(id,i){
+    var g=byId(id);if(!g)return;
+    var d=document.createElement('div');d.className='gr';
+    d.innerHTML='<span class="lab" style="width:26px">#'+(i+1)+'</span><span class="nm">'+g.name+'<span class="lab">'+g.soft+' · '+g.category+' · ID '+g.id+'</span></span>'+
+      '<span class="a" data-up="'+id+'" title="Move up"><i class="fas fa-arrow-up"></i></span><span class="a" data-down="'+id+'" title="Move down"><i class="fas fa-arrow-down"></i></span><span class="a red" data-rm="'+id+'">remove</span>';
+    z.appendChild(d);
+  });
+  if(!cur.games.length)z.innerHTML='<div class="help" style="padding:8px">No games yet. Search below and add.</div>';
+  var q=$('#psearch').value.trim().toLowerCase();
+  var pool=$('#pool');pool.innerHTML='';
+  if(!q){pool.innerHTML='<div class="help" style="padding:8px">Type to search the catalog. Results appear here.</div>';return}
+  var toks=q.split(/[\s,;]+/).filter(Boolean);
+  var idMode=toks.every(function(t){return /^\d{4,}$/.test(t)})&&toks.length>1;
+  var hits=GAMES.filter(function(g){
+    if(cur.games.indexOf(g.id)>-1)return false;
+    if(idMode)return toks.indexOf(String(g.id))>-1;
+    return toks.every(function(t){return (g.name+' '+g.soft+' '+g.id).toLowerCase().indexOf(t)>-1});
+  }).slice(0,20);
+  if(!hits.length){pool.innerHTML='<div class="help" style="padding:8px">Nothing in the catalog matches that.</div>';return}
+  hits.forEach(function(g){
+    var d=document.createElement('div');d.className='gr';
+    d.innerHTML='<span class="nm">'+g.name+'<span class="lab">'+g.soft+' · '+g.category+' · ID '+g.id+'</span></span><span class="a" data-add="'+g.id+'"><i class="fas fa-plus"></i> Add</span>';
+    pool.appendChild(d);
+  });
+}
+window.savePreset=function(){
+  var nm=$('#pname').value.trim();
+  if(!nm){toast('Give the preset a name first.');return}
+  if(!cur.games.length){toast('Add at least one game.');return}
+  if(editing){var p=presets.filter(function(x){return x.id===editing})[0];p.name=nm;p.games=cur.games.slice();p.upd='just now';
+    var refs=p.usedCat.length+p.usedAch.length;
+    toast(refs?('Preset saved. '+refs+' linked place'+(refs>1?'s':'')+' updated automatically.'):'Preset saved.');}
+  else {presets.push({id:nextId++,name:nm,games:cur.games.slice(),usedCat:[],usedAch:[],upd:'just now'});toast('Preset created. Now link it from any category or achievement.');}
+  closeEditor();renderList();
+}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-edit],[data-dup],[data-del],[data-add],[data-rm],[data-up],[data-down],[data-use],[data-detach],#demoreset');
+  if(!t)return;
+  if(t.id==='demoreset'){presets=JSON.parse(JSON.stringify(seed));nextId=4;links={cat:null,ach:null};renderList();toast('Demo reset.');return}
+  var v;
+  if(v=t.getAttribute('data-edit'))return openEditor(+v);
+  if(v=t.getAttribute('data-dup')){var p=presets.filter(function(x){return x.id===+v})[0];presets.push({id:nextId++,name:p.name+' (copy)',games:p.games.slice(),usedCat:[],usedAch:[],upd:'just now'});renderList();toast('Duplicated. The copy is not linked anywhere.');return}
+  if(v=t.getAttribute('data-del')){presets=presets.filter(function(x){return x.id!==+v});renderList();toast('Preset deleted.');return}
+  if(v=t.getAttribute('data-add')){cur.games.push(+v);renderEditor();return}
+  if(v=t.getAttribute('data-rm')){cur.games=cur.games.filter(function(id){return id!==+v});renderEditor();return}
+  if(v=t.getAttribute('data-up')){var i=cur.games.indexOf(+v);if(i>0){cur.games.splice(i-1,0,cur.games.splice(i,1)[0]);renderEditor()}return}
+  if(v=t.getAttribute('data-down')){var i2=cur.games.indexOf(+v);if(i2>-1&&i2<cur.games.length-1){cur.games.splice(i2+1,0,cur.games.splice(i2,1)[0]);renderEditor()}return}
+  if(v=t.getAttribute('data-use')){
+    var mode=t.getAttribute('data-mode');
+    var sel=document.getElementById(v==='cat'?'catsel':'achsel');
+    var pid=+sel.value;var p=presets.filter(function(x){return x.id===pid})[0];
+    if(!p)return;
+    links[v]={pid:pid,mode:mode,snapName:p.name,count:p.games.length};
+    if(mode==='link'){(v==='cat'?p.usedCat:p.usedAch).indexOf(v==='cat'?'Summer Push':'Spin the Summer x50')<0&&(v==='cat'?p.usedCat:p.usedAch).push(v==='cat'?'Summer Push':'Spin the Summer x50');}
+    renderList();
+    toast(mode==='link'?('Linked "'+p.name+'". This list now follows the preset.'):('Inserted a copy of "'+p.name+'". It will not follow future preset edits.'));
+    return}
+  if(v=t.getAttribute('data-detach')){
+    var L=links[v];
+    if(L&&L.mode==='link'){var p2=presets.filter(function(x){return x.id===L.pid})[0];
+      if(p2){var arr=(v==='cat'?p2.usedCat:p2.usedAch);var nm=(v==='cat'?'Summer Push':'Spin the Summer x50');var ix=arr.indexOf(nm);if(ix>-1)arr.splice(ix,1);}}
+    links[v]=null;renderList();toast('Detached. The games stay where they are as a plain list.');return}
+});
+$('#psearch').addEventListener('input',renderEditor);
+renderList();
+})();
+</script>
+</body>
+</html>
