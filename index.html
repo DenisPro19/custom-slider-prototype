@@ -227,7 +227,7 @@
         <select id="msortsel" data-sortsel="1"><option value="rating">By your Company Rating</option><option value="starts">By game starts</option></select>
         <span class="help" id="msorthint" style="margin-top:0">Uses the rating you set per game.</span></div>
       <div id="mratechg" class="help" style="display:none"></div>
-      <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="msearch" placeholder="Search by name, provider or ID — or paste a list of game IDs"></div>
+      <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="msearch" placeholder="Search by name, provider, category or ID"></div>
       <div id="mfilter" style="margin-bottom:12px"></div>
       <div class="zt">Pinned <small id="mpc"></small></div><div class="zone" id="mpinned"></div>
       <div class="zt">Auto-filled <small id="mtc"></small></div><div class="zone" id="mtail"></div>
@@ -552,7 +552,8 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     if(wantAdd){
       if(!addsec){addsec=document.createElement('div');addsec.id='maddsec';$('#mtail').parentNode.insertBefore(addsec,document.getElementById('mnores'));}
       addsec.style.display='block';
-      var extra=(scope==='specific')?('<div style="display:flex;gap:10px;align-items:center;margin:4px 0 6px;font-size:12px;flex-wrap:wrap"><label style="margin:0;font-weight:400"><input type="checkbox" id="pinadd"'+(pinAdd?' checked':'')+'> Pin as I add (keeps your adding order)</label><span class="lab">Tip: paste a list of game IDs into the search above to add them all at once.</span></div>'):'';
+      var bulkField='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 6px"><input id="pasteids" placeholder="Paste game IDs here, separated by spaces or commas (up to 100)" style="flex:1;min-width:240px;font-size:11.5px;padding:4px 8px;border:1px solid #d2d6de;border-radius:3px"><span class="bb morebtn" data-pasteids="1" style="text-decoration:none;border:1px solid #cfdce5;border-radius:3px;padding:3px 10px;background:#f4f8fb"><i class="fas fa-plus" style="font-size:10px"></i> Add &amp; select</span></div>';
+      var extra=(scope==='specific')?('<div style="display:flex;gap:10px;align-items:center;margin:4px 0 6px;font-size:12px;flex-wrap:wrap"><label style="margin:0;font-weight:400"><input type="checkbox" id="pinadd"'+(pinAdd?' checked':'')+'> Pin as I add (keeps your adding order)</label></div>'+bulkField):bulkField;
       addsec.innerHTML='<div class="zt" id="maddtitle">'+((scope==='specific')?'Add games <small>from the full catalog</small>':'Add games outside these filters <small>they stay in this slider, always</small>')+'</div>'+extra+'<div class="zone" id="madd"></div>';
       var madd=document.getElementById('madd');
       var pool;
@@ -683,6 +684,16 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     var ma=e.target.closest('[data-moreadd]');if(ma){addShown+=50;renderModal();return;}
     var pa=e.target.closest('[data-pinall]');
     if(pa){var m2=inSlider();var tl=m2.filter(function(g){return !pins[g.id]}).sort(cmp);tl.forEach(function(g){pins[g.id]=(++order);});renderModal();dirty();renderAll();showToast('Pinned all '+m2.length+' games in the current order. Drag to rearrange.');return;}
+    var pi=e.target.closest('[data-pasteids]');
+    if(pi){var raw=(document.getElementById('pasteids')||{}).value||'';var idsIn=raw.split(/[^0-9]+/).filter(Boolean).map(Number);
+      var uniq=[];idsIn.forEach(function(id){if(uniq.indexOf(id)<0)uniq.push(id);});
+      var LIM=100;var over=uniq.length>LIM;var use=uniq.slice(0,LIM);var ok=0;
+      use.forEach(function(id){if(byId(id)){if(scope==='specific'){specific.add(id);if(pinAdd&&!pins[id])pins[id]=(++order);}else{includes.add(id);if(!pins[id])pins[id]=(++order);}ok++;}});
+      var el=document.getElementById('pasteids');if(el)el.value='';
+      renderModal();dirty();renderAll();
+      var msg='Added & selected '+ok+' of '+use.length+' IDs'+(ok<use.length?' ('+(use.length-ok)+' not in the catalog)':'')+'.';
+      if(over)msg+=' Up to 100 per paste, '+(uniq.length-LIM)+' skipped.';
+      showToast(msg);return;}
     var rr=e.target.closest('[data-revratings]');
     if(rr){ratingChanges().forEach(function(id){ratings[id]=ratedBase[id]||0;});renderModal();renderSummary();renderPreview();return;}
     if(e.target.id==='apply'||e.target.closest('#apply')){doApply();return;}
@@ -731,23 +742,6 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     this.innerHTML=off?'<i class="fas fa-eye" style="font-size:10px;margin-right:4px"></i>Show preview':'<i class="fas fa-eye-slash" style="font-size:10px;margin-right:4px"></i>Hide preview';
   });
   $('#msearch').addEventListener('input',function(){tailShown=CAP;addShown=50;renderModal();});
-  // Paste a list of game IDs straight into the search -> add them all at once (no separate input)
-  $('#msearch').addEventListener('paste',function(){
-    setTimeout(function(){
-      if(!$('#ov').classList.contains('show'))return;
-      var raw=($('#msearch').value||'').trim();
-      var toks=raw.split(/[^0-9]+/).filter(Boolean);
-      if(toks.length<2 || !toks.every(function(x){return /^\d{3,}$/.test(x);}))return; // a real ID-list paste, not a name
-      var uniq=[];toks.map(Number).forEach(function(id){if(uniq.indexOf(id)<0)uniq.push(id);});
-      var LIM=100;var over=uniq.length>LIM;var use=uniq.slice(0,LIM);var ok=0;
-      use.forEach(function(id){if(byId(id)){if(scope==='specific'){specific.add(id);if(pinAdd&&!pins[id])pins[id]=(++order);}else{includes.add(id);if(!pins[id])pins[id]=(++order);}ok++;}});
-      $('#msearch').value='';tailShown=CAP;addShown=50;
-      renderModal();dirty();renderAll();
-      var msg='Added '+ok+' of '+use.length+' pasted IDs'+(ok<use.length?' ('+(use.length-ok)+' not in the catalog)':'')+'.';
-      if(over)msg+=' Up to 100 per paste, '+(uniq.length-LIM)+' skipped.';
-      showToast(msg);
-    },0);
-  });
   $('#sname').addEventListener('input',function(){renderPreview();});
   window.addEventListener('beforeunload',function(e){if(dirtyFlag||saving){e.preventDefault();e.returnValue='';}});
 
