@@ -163,7 +163,7 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
     <div class="zt">Add games</div>
     <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="psearch" placeholder="Search the catalog by name, provider or ID"></div>
     <div id="poolwrap"></div>
-    <div class="help">Search-first, same as the Game Filter. Paste a list of game IDs into the search box to add in bulk.</div>
+    <div class="help">Search-first, same as the Game Filter. <b>Paste up to 100 game IDs</b> (comma, space or new line) into the search to add them all at once.</div>
   </div>
   <div class="m-ft"><span class="lab" id="musedin"></span>
     <div style="display:flex;gap:8px;flex-shrink:0"><button class="btn btn-flat" onclick="closeEditor()">Cancel</button> <button class="btn btn-flat" id="psavenew" style="display:none" onclick="saveAsNew()"><i class="far fa-copy"></i> Save as new preset</button> <button class="btn btn-green" id="psave" onclick="savePreset()">Save preset</button></div></div>
@@ -178,6 +178,23 @@ function $(s){return document.querySelector(s)}
 function toast(t){var x=$('#toast');x.textContent=t;x.style.display='block';clearTimeout(x._t);x._t=setTimeout(function(){x.style.display='none'},3400)}
 function byId(id){for(var i=0;i<GAMES.length;i++)if(GAMES[i].id===id)return GAMES[i];return null}
 function pad(ids,n){var out=ids.slice(0,n);GAMES.forEach(function(g){if(out.length<n&&out.indexOf(g.id)<0)out.push(g.id)});return out.slice(0,n)}
+var PASTE_CAP=100;
+function addMatches(toks,idMode){
+  var matches=GAMES.filter(function(g){
+    if(cur.games.indexOf(g.id)>-1)return false;
+    if(idMode)return toks.indexOf(String(g.id))>-1;
+    return toks.every(function(t2){return (g.name+' '+g.soft+' '+g.id).toLowerCase().indexOf(t2)>-1;});
+  });
+  var add=matches.slice(0,PASTE_CAP);add.forEach(function(g){cur.games.push(g.id);});
+  var nf=idMode?(toks.length-matches.length):0;
+  return {added:add.length,truncated:matches.length>PASTE_CAP,notFound:nf<0?0:nf};
+}
+function addToastMsg(r){
+  var m='Added '+r.added+' game'+(r.added!==1?'s':'')+'.';
+  if(r.truncated)m='Added the first 100 games (up to 100 per paste).';
+  if(r.notFound>0)m+=' '+r.notFound+' ID'+(r.notFound>1?'s':'')+' not in the catalog.';
+  return m;
+}
 
 // Per-product config (real-money casino vs sweepstakes = separate modules/catalogs)
 var PROD={
@@ -296,7 +313,9 @@ function renderEditor(){
   });
   if(!hits.length){pw.innerHTML='<div class="help" style="padding:6px 2px">Nothing in the catalog matches that.</div>';return}
   var bulk=document.createElement('div');bulk.className='bulkbar';
-  bulk.innerHTML='<span>'+hits.length+' match'+(hits.length>1?'es':'')+'</span><span class="a" data-addall="1"><i class="fas fa-plus"></i> Add all '+hits.length+'</span>';
+  if(idMode){var nf=toks.length-hits.length;
+    bulk.innerHTML='<span>'+hits.length+' of '+toks.length+' pasted IDs found'+(nf>0?', '+nf+' not in catalog':'')+'</span><span class="a" data-addall="1"><i class="fas fa-plus"></i> Add '+Math.min(hits.length,PASTE_CAP)+'</span>';}
+  else bulk.innerHTML='<span>'+hits.length+' match'+(hits.length>1?'es':'')+'</span><span class="a" data-addall="1"><i class="fas fa-plus"></i> Add all '+Math.min(hits.length,PASTE_CAP)+'</span>';
   pw.appendChild(bulk);
   var zone=document.createElement('div');zone.className='zone';
   hits.slice(0,poolShown).forEach(function(g){
@@ -353,8 +372,7 @@ document.addEventListener('click',function(e){
   if(t.getAttribute('data-addall')){
     var q=$('#psearch').value.trim().toLowerCase();var toks=q.split(/[\s,;]+/).filter(Boolean);
     var idMode=toks.length>1&&toks.every(function(x){return /^\d{4,}$/.test(x)});
-    GAMES.forEach(function(g){if(cur.games.indexOf(g.id)>-1)return;var ok=idMode?toks.indexOf(String(g.id))>-1:toks.every(function(t2){return (g.name+' '+g.soft+' '+g.id).toLowerCase().indexOf(t2)>-1});if(ok)cur.games.push(g.id);});
-    renderEditor();return}
+    var r=addMatches(toks,idMode);renderEditor();toast(addToastMsg(r));return}
   if(t.getAttribute('data-poolmore')){poolShown+=40;renderEditor();return}
   if(v=t.getAttribute('data-rm')){var idv=v.match(/^\d+$/)?+v:v;cur.games=cur.games.filter(function(id){return id!==idv&&id!==v&&String(id)!==v});renderEditor();return}
   if(v=t.getAttribute('data-use')){
@@ -376,6 +394,16 @@ document.addEventListener('change',function(e){
     if(from>-1){cur.games.splice(to,0,cur.games.splice(from,1)[0]);}renderEditor();return}
 });
 $('#psearch').addEventListener('input',function(){poolShown=40;renderEditor();});
+// Just paste a list of game IDs (up to 100) -> add them all at once
+$('#psearch').addEventListener('paste',function(){
+  setTimeout(function(){
+    if(!cur)return;
+    var raw=$('#psearch').value.trim();var toks=raw.split(/[\s,;]+/).filter(Boolean);
+    if(toks.length>=2&&toks.every(function(x){return /^\d{4,}$/.test(x)})){
+      var r=addMatches(toks,true);$('#psearch').value='';poolShown=40;renderEditor();toast(addToastMsg(r));
+    }
+  },0);
+});
 // drag reorder in the preset list
 var dragId=null;
 document.addEventListener('dragstart',function(e){var r=e.target.closest('#pgames .gr');if(r&&r.getAttribute('data-gid')){dragId=r.getAttribute('data-gid');r.style.opacity='.5';}});

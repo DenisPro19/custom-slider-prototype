@@ -553,7 +553,7 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
       var pv=(document.getElementById('pasteids')||{}).value||'';
       if(!addsec){addsec=document.createElement('div');addsec.id='maddsec';$('#mtail').parentNode.insertBefore(addsec,document.getElementById('mnores'));}
       addsec.style.display='block';
-      var extra=(scope==='specific')?('<div style="display:flex;gap:10px;align-items:center;margin:4px 0 6px;font-size:12px;flex-wrap:wrap"><label style="margin:0;font-weight:400"><input type="checkbox" id="pinadd"'+(pinAdd?' checked':'')+'> Pin as I add (keeps your adding order)</label><input id="pasteids" value="'+esc(pv)+'" placeholder="Or paste game IDs: 5023, 7871, …" style="flex:1;min-width:160px;font-size:11.5px;padding:3px 6px;border:1px solid #d2d6de;border-radius:3px"><span class="bb morebtn" data-pasteids="1" style="text-decoration:none;border:1px solid #cfdce5;border-radius:3px;padding:2px 8px;background:#f4f8fb">Add IDs</span></div>'):'';
+      var extra=(scope==='specific')?('<div style="display:flex;gap:10px;align-items:center;margin:4px 0 6px;font-size:12px;flex-wrap:wrap"><label style="margin:0;font-weight:400"><input type="checkbox" id="pinadd"'+(pinAdd?' checked':'')+'> Pin as I add (keeps your adding order)</label><input id="pasteids" value="'+esc(pv)+'" placeholder="Or paste up to 100 game IDs: 5023, 7871, …" style="flex:1;min-width:160px;font-size:11.5px;padding:3px 6px;border:1px solid #d2d6de;border-radius:3px"><span class="bb morebtn" data-pasteids="1" style="text-decoration:none;border:1px solid #cfdce5;border-radius:3px;padding:2px 8px;background:#f4f8fb">Add IDs</span></div>'):'';
       addsec.innerHTML='<div class="zt" id="maddtitle">'+((scope==='specific')?'Add games <small>from the full catalog</small>':'Add games outside these filters <small>they stay in this slider, always</small>')+'</div>'+extra+'<div class="zone" id="madd"></div>';
       var madd=document.getElementById('madd');
       var pool;
@@ -685,9 +685,14 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     var pa=e.target.closest('[data-pinall]');
     if(pa){var m2=inSlider();var tl=m2.filter(function(g){return !pins[g.id]}).sort(cmp);tl.forEach(function(g){pins[g.id]=(++order);});renderModal();dirty();renderAll();showToast('Pinned all '+m2.length+' games in the current order. Drag to rearrange.');return;}
     var pi=e.target.closest('[data-pasteids]');
-    if(pi){var raw=(document.getElementById('pasteids')||{}).value||'';var idsIn=raw.split(/[^0-9]+/).filter(Boolean).map(Number);var ok=0;
-      idsIn.forEach(function(id){if(byId(id)){specific.add(id);if(pinAdd&&!pins[id])pins[id]=(++order);ok++;}});
-      renderModal();dirty();renderAll();showToast('Added '+ok+' of '+idsIn.length+' IDs'+(ok<idsIn.length?' (the rest were not found in the catalog)':'')+'.');return;}
+    if(pi){var raw=(document.getElementById('pasteids')||{}).value||'';var idsIn=raw.split(/[^0-9]+/).filter(Boolean).map(Number);
+      var uniq=[];idsIn.forEach(function(id){if(uniq.indexOf(id)<0)uniq.push(id);});
+      var CAP=100;var over=uniq.length>CAP;var use=uniq.slice(0,CAP);var ok=0;
+      use.forEach(function(id){if(byId(id)){specific.add(id);if(pinAdd&&!pins[id])pins[id]=(++order);ok++;}});
+      renderModal();dirty();renderAll();
+      var msg='Added '+ok+' of '+use.length+' IDs'+(ok<use.length?' (the rest were not found in the catalog)':'')+'.';
+      if(over)msg+=' Up to 100 per paste, '+(uniq.length-CAP)+' skipped.';
+      showToast(msg);return;}
     var rr=e.target.closest('[data-revratings]');
     if(rr){ratingChanges().forEach(function(id){ratings[id]=ratedBase[id]||0;});renderModal();renderSummary();renderPreview();return;}
     if(e.target.id==='apply'||e.target.closest('#apply')){doApply();return;}
