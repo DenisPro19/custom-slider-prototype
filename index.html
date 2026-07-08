@@ -185,14 +185,6 @@
             <span data-s="all">All games</span><span data-s="type">By type</span><span data-s="category">By category</span><span data-s="specific">Specific games</span>
           </div>
           <div id="scopearea"></div>
-          <div class="lab" style="margin:2px 0 8px">Or copy the setup of an existing slider:
-            <select id="copysel" style="font-size:12px;padding:2px 6px;border:1px solid #d2d6de;border-radius:3px;color:#555">
-              <option value="">Choose a slider…</option>
-              <option value="top">Top Slots (32,418 games · auto)</option>
-              <option value="summer">Summer Hits (48 games · manual)</option>
-              <option value="prag">Pragmatic Push (2,349 games · auto)</option>
-            </select>
-          </div>
 
           <div class="fld"><div class="cap"><span>Narrow by provider (optional)</span><span id="provsel" class="lab"></span></div><div class="opts" id="provopts"></div></div>
 
@@ -808,17 +800,6 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     var rk=e.target.getAttribute&&e.target.getAttribute('data-rank');
     if(rk){var id2=+rk;pins[id2]=(parseInt(e.target.value)||1)-0.5;renderModal();dirty();renderAll();return;}
     if(e.target.id==='pinadd'){pinAdd=e.target.checked;}
-    if(e.target.id==='copysel'){
-      var v=e.target.value;if(!v)return;
-      selProv.clear();selType.clear();selCat.clear();specific.clear();pins={};includes.clear();excluded.clear();order=1;seedOffer=null;
-      if(v==='top'){scope='type';selType.add('Slots');sort='rating';}
-      else if(v==='prag'){scope='all';selProv.add('Pragmatic Play');sort='starts';}
-      else if(v==='summer'){scope='specific';DATA.games.slice(0,48).forEach(function(g){specific.add(g.id)});DATA.games.slice(0,6).forEach(function(g,i){pins[g.id]=i+1;order=i+2;});}
-      document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
-      dirty();renderAll();
-      showToast('Copied the setup of "'+e.target.options[e.target.selectedIndex].text+'". Nothing is saved yet.');
-      e.target.value='';
-    }
   });
   var dragId=null;
   document.addEventListener('dragstart',function(e){var r=e.target.closest('#mpinned .gr');if(r&&r.getAttribute('data-gid')){dragId=+r.getAttribute('data-gid');try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','');}catch(_){}r.style.opacity='.5';}});
