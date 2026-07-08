@@ -175,6 +175,12 @@
           <div id="histpanel" style="display:none"></div>
           <div class="gf-hd"><span class="t">Games Filter <span class="req">*</span></span><span class="chip" id="chip">Not saved yet</span></div>
           <div style="font-size:12.5px;color:#5b6b77;margin-bottom:6px">What goes in this slider?</div>
+          <div id="presetbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f6f9fb;border:1px solid #e3ebf1;border-radius:3px;padding:7px 10px;margin-bottom:8px;font-size:12.5px">
+            <span style="font-weight:600;white-space:nowrap"><i class="fas fa-layer-group" style="color:#7b8a95"></i> Preset</span>
+            <span id="presetstate" style="flex:1;min-width:150px"></span>
+            <select id="usepreset" style="font-size:12px;padding:2px 6px;border:1px solid #d2d6de;border-radius:3px;color:#555"></select>
+            <span class="a" id="savepreset" style="white-space:nowrap">Save this filter as a preset</span>
+          </div>
           <div class="seg" id="scope">
             <span data-s="all">All games</span><span data-s="type">By type</span><span data-s="category">By category</span><span data-s="specific">Specific games</span>
           </div>
@@ -239,6 +245,25 @@
     <div class="m-ft"><span class="lab" id="mftlab">Pin a short highlight list; the tail sorts itself.</span>
       <div><button class="btn btn-cancel" onclick="closeModal()">Cancel</button> <button class="btn btn-blue" onclick="saveOrder()">Apply order</button></div></div>
   </div></div>
+  <div class="ov" id="pdlg"><div class="modal" style="width:480px;max-width:100%">
+    <div class="m-hd"><span class="t">Save filter changes to the preset</span><i class="fas fa-times" style="cursor:pointer;color:#8895a0;margin-left:auto" onclick="closePdlg()"></i></div>
+    <div class="m-bd" style="font-size:13px">
+      <p id="pdlgtext" style="margin-bottom:12px;line-height:1.5"></p>
+      <div id="pdupdatewrap" style="border:1px solid #cfe3d4;background:#f4faf5;border-radius:4px;padding:10px 12px;margin-bottom:10px">
+        <button class="btn btn-green" id="pdupdate" style="width:100%"><i class="fas fa-sync-alt"></i> <span id="pdupdatelbl">Update the preset</span></button>
+        <div class="lab" style="margin-top:6px">Everywhere that links this preset updates automatically.</div>
+      </div>
+      <div style="text-align:center;color:#9aa7b0;font-size:12px;margin:6px 0">or</div>
+      <div style="border:1px solid #e3ebf1;border-radius:4px;padding:10px 12px">
+        <div class="lab" style="margin-bottom:5px">New preset name</div>
+        <input type="text" id="pdnewname" style="width:100%;border:1px solid #d2d6de;border-radius:3px;height:32px;padding:0 10px;font-size:13px;margin-bottom:8px" placeholder="e.g. Top Slots (edited)">
+        <button class="btn btn-blue" id="pdnew" style="width:100%"><i class="far fa-copy"></i> Save as a new preset</button>
+        <div class="lab" style="margin-top:6px">This slider follows the new preset. Others keep the original.</div>
+      </div>
+    </div>
+    <div class="m-ft"><span class="lab">No detach: a filter that came from a preset stays a preset.</span><button class="btn btn-cancel" onclick="closePdlg()">Cancel</button></div>
+  </div></div>
+
   <div id="toast" style="display:none;position:fixed;bottom:18px;right:18px;background:#2c3e50;color:#fff;padding:10px 14px;border-radius:6px;font-size:12.5px;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3)"></div>
 
 <script>
@@ -606,7 +631,66 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
   window.keepFlagged=function(){var fp=flaggedPins();fp.forEach(function(id){includes.add(id);});dirty();renderAll();if($('#ov').classList.contains('show'))renderModal();showToast(fp.length+' game'+(fp.length>1?'s':'')+' will now always stay in this slider.');};
   window.removeFlagged=function(){var fp=flaggedPins();var saved={};fp.forEach(function(id){saved[id]=pins[id];delete pins[id];});dirty();renderAll();showToast('Removed '+fp.length+' pinned game'+(fp.length>1?'s':'')+'.',function(){for(var id in saved){pins[id]=saved[id];}dirty();renderAll();});};
 
-  function renderAll(){renderProviders();renderScopeArea();renderSummary();renderPreview();syncSortUI();}
+  // ===== presets (this slider is a preset consumer) =====
+  var presetLib=[
+    {id:'p1',name:'Top Slots',scope:'type',type:['Slots'],cat:[],prov:[],specific:[],includes:[],excludes:[],sort:'rating',used:1},
+    {id:'p2',name:'Pragmatic Slots',scope:'type',type:['Slots'],cat:[],prov:['Pragmatic Play'],specific:[],includes:[],excludes:[],sort:'rating',used:0},
+    {id:'p3',name:'Live favourites',scope:'category',type:[],cat:['Roulette','Black Jack'],prov:[],specific:[],includes:[],excludes:[],sort:'starts',used:2}
+  ];
+  var linkedPreset=null, pnextId=10, pdlgThen=null;
+  function arrSet(s){return Array.from(s).sort();}
+  function curFilterSig(){return JSON.stringify({s:scope,t:arrSet(selType),c:arrSet(selCat),p:arrSet(selProv),sp:arrSet(specific),i:arrSet(includes),e:arrSet(excluded)});}
+  function presetSig(p){return JSON.stringify({s:p.scope,t:p.type.slice().sort(),c:p.cat.slice().sort(),p:p.prov.slice().sort(),sp:p.specific.slice().sort(),i:p.includes.slice().sort(),e:p.excludes.slice().sort()});}
+  function pById(id){for(var i=0;i<presetLib.length;i++)if(presetLib[i].id===id)return presetLib[i];return null;}
+  function diverged(){if(!linkedPreset)return false;var p=pById(linkedPreset.id);return !p||presetSig(p)!==curFilterSig();}
+  function presetSummary(p){
+    if(p.scope==='all')return 'All games';
+    if(p.scope==='type')return 'By type: '+(p.type.join(', ')||'—')+(p.prov.length?' · '+p.prov.join(', '):'');
+    if(p.scope==='category')return 'By category: '+(p.cat.join(', ')||'—');
+    return 'Specific: '+p.specific.length+' games';
+  }
+  function curToPresetFields(){return {scope:scope,type:arrSet(selType),cat:arrSet(selCat),prov:arrSet(selProv),specific:arrSet(specific),includes:arrSet(includes),excludes:arrSet(excluded),sort:sort};}
+  function applyPreset(p){
+    scope=p.scope;selType=new Set(p.type);selCat=new Set(p.cat);selProv=new Set(p.prov);specific=new Set(p.specific);includes=new Set(p.includes);excluded=new Set(p.excludes);sort=p.sort||'rating';
+    linkedPreset={id:p.id,name:p.name};
+    document.querySelectorAll('#scope [data-s]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-s')===scope)});
+    tailShown=CAP;dirty();renderAll();
+    showToast('Applied preset "'+p.name+'". This slider now follows it; new matching games join automatically.');
+  }
+  function renderPresetBar(){
+    var sel=$('#usepreset');if(!sel)return;
+    sel.innerHTML='<option value="">Use a preset…</option>'+presetLib.map(function(p){return '<option value="'+p.id+'"'+(linkedPreset&&linkedPreset.id===p.id?' selected':'')+'>'+p.name+' — '+presetSummary(p)+'</option>';}).join('');
+    var st=$('#presetstate'),sp=$('#savepreset');
+    if(linkedPreset){
+      st.innerHTML='<i class="fas fa-link" style="color:#2EA447"></i> Following <b>'+linkedPreset.name+'</b>'+(diverged()?' <span style="color:#e67e22">· filter edited, choose on save</span>':' <span class="lab">· in sync</span>');
+      sp.style.display='none';
+    } else { st.innerHTML='<span class="lab">Not using a preset (optional).</span>'; sp.style.display='inline'; }
+  }
+  window.closePdlg=function(){$('#pdlg').classList.remove('show');pdlgThen=null;};
+  function openPdlg(afterFn){
+    pdlgThen=afterFn||null;
+    var linked=!!linkedPreset;
+    $('#pdupdatewrap').style.display=linked?'block':'none';
+    if(linked){var p=pById(linkedPreset.id);var n=(p&&p.used)||0;
+      $('#pdlgtext').innerHTML='You edited the game filter of preset <b>'+linkedPreset.name+'</b>. What should happen to it?';
+      $('#pdupdatelbl').textContent='Update preset "'+linkedPreset.name+'"'+(n?' (updates '+n+' linked place'+(n>1?'s':'')+')':'');
+      $('#pdnewname').value=linkedPreset.name+' (edited)';
+    } else { $('#pdlgtext').innerHTML="Save this slider's current filter as a reusable preset."; $('#pdnewname').value=($('#sname').value.trim()||'New preset'); }
+    $('#pdlg').classList.add('show');
+  }
+  document.getElementById('pdupdate').addEventListener('click',function(){
+    if(!linkedPreset)return;var f=pdlgThen;pdlgThen=null;var p=pById(linkedPreset.id);var nm=p?p.name:'';if(p)Object.assign(p,curToPresetFields());
+    closePdlg();showToast('Preset "'+nm+'" updated. Everywhere that links it will follow.');renderPresetBar();if(f)f();
+  });
+  document.getElementById('pdnew').addEventListener('click',function(){
+    var nm=$('#pdnewname').value.trim();if(!nm){showToast('Give the new preset a name first.');return;}
+    var f=pdlgThen;pdlgThen=null;var np=Object.assign({id:'p'+(pnextId++),name:nm,used:0},curToPresetFields());presetLib.push(np);linkedPreset={id:np.id,name:np.name};
+    closePdlg();showToast('Saved as new preset "'+nm+'". This slider follows it; others keep the original.');renderPresetBar();if(f)f();
+  });
+  document.getElementById('savepreset').addEventListener('click',function(){openPdlg(null);});
+  document.getElementById('usepreset').addEventListener('change',function(){var id=this.value;if(!id){this.value=linkedPreset?linkedPreset.id:'';return;}var p=pById(id);if(p)applyPreset(p);});
+
+  function renderAll(){renderProviders();renderScopeArea();renderSummary();renderPreview();syncSortUI();renderPresetBar();}
 
   // ===== apply / save =====
   function doApply(){
@@ -614,6 +698,10 @@ const DATA = {"total":42049,"studios":[{"name":"Pragmatic Play","count":2349},{"
     var name=$('#sname').value.trim();
     if(!name){setChip("Couldn't save · slider name is required · Retry",'err');$('#sname').style.borderColor='#dd4b39';return;}
     $('#sname').style.borderColor='';
+    if(linkedPreset && diverged()){ openPdlg(finalSave); return; }
+    finalSave();
+  }
+  function finalSave(){
     saving=true;setChip('Saving…','busy');
     setTimeout(function(){if(saving)setChip('Games updating','busy');},800);
     setTimeout(function(){
