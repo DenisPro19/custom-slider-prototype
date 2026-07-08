@@ -162,8 +162,9 @@ input[type=text]{border:1px solid var(--border);border-radius:3px;height:32px;pa
     <div class="zone" id="pgames"></div>
     <div class="zt">Add games</div>
     <div class="search"><i class="fas fa-search" style="color:#9aa7b0"></i><input id="psearch" placeholder="Search the catalog by name, provider or ID"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 2px"><input type="text" id="ppasteids" placeholder="Or paste game IDs here, separated by spaces or commas (up to 100)" style="flex:1;min-width:240px"><span class="btn btn-flat" data-ppaste="1" style="padding:6px 10px;white-space:nowrap"><i class="fas fa-plus" style="font-size:10px"></i> Add &amp; select</span></div>
     <div id="poolwrap"></div>
-    <div class="help">Search-first, same as the Game Filter. <b>Paste up to 100 game IDs</b> (comma, space or new line) into the search to add them all at once.</div>
+    <div class="help">Search-first, same as the Game Filter. Or paste a list of game IDs into the dedicated field above to add them all at once.</div>
   </div>
   <div class="m-ft"><span class="lab" id="musedin"></span>
     <div style="display:flex;gap:8px;flex-shrink:0"><button class="btn btn-flat" onclick="closeEditor()">Cancel</button> <button class="btn btn-flat" id="psavenew" style="display:none" onclick="saveAsNew()"><i class="far fa-copy"></i> Save as new preset</button> <button class="btn btn-green" id="psave" onclick="savePreset()">Save preset</button></div></div>
@@ -361,7 +362,7 @@ document.addEventListener('click',function(e){
     pt.classList.add('on');if(prod==='sweeps')pt.classList.add('sw');
     document.querySelectorAll('.prodtabs button').forEach(function(b){});
     renderList();return}
-  var t=e.target.closest('[data-edit],[data-dup],[data-del],[data-add],[data-addall],[data-poolmore],[data-rm],[data-use],[data-edituse],[data-detach],#demoreset');
+  var t=e.target.closest('[data-edit],[data-dup],[data-del],[data-add],[data-addall],[data-ppaste],[data-poolmore],[data-rm],[data-use],[data-edituse],[data-detach],#demoreset');
   if(!t)return;
   if(t.id==='demoreset'){lib={casino:seedFor('casino'),sweeps:seedFor('sweeps')};links={casino:{cat:null,ach:null},sweeps:{cat:null,ach:null}};nextId=100;renderList();toast('Demo reset.');return}
   var v;
@@ -373,6 +374,11 @@ document.addEventListener('click',function(e){
     var q=$('#psearch').value.trim().toLowerCase();var toks=q.split(/[\s,;]+/).filter(Boolean);
     var idMode=toks.length>1&&toks.every(function(x){return /^\d{4,}$/.test(x)});
     var r=addMatches(toks,idMode);renderEditor();toast(addToastMsg(r));return}
+  if(t.getAttribute('data-ppaste')){
+    var raw=(document.getElementById('ppasteids')||{}).value||'';
+    var toks=raw.split(/[\s,;]+/).filter(Boolean).filter(function(x){return /^\d{3,}$/.test(x)});
+    if(!toks.length){toast('Paste some game IDs first.');return}
+    var r=addMatches(toks,true);var el=document.getElementById('ppasteids');if(el)el.value='';poolShown=40;renderEditor();toast(addToastMsg(r));return}
   if(t.getAttribute('data-poolmore')){poolShown+=40;renderEditor();return}
   if(v=t.getAttribute('data-rm')){var idv=v.match(/^\d+$/)?+v:v;cur.games=cur.games.filter(function(id){return id!==idv&&id!==v&&String(id)!==v});renderEditor();return}
   if(v=t.getAttribute('data-use')){
@@ -394,16 +400,6 @@ document.addEventListener('change',function(e){
     if(from>-1){cur.games.splice(to,0,cur.games.splice(from,1)[0]);}renderEditor();return}
 });
 $('#psearch').addEventListener('input',function(){poolShown=40;renderEditor();});
-// Just paste a list of game IDs (up to 100) -> add them all at once
-$('#psearch').addEventListener('paste',function(){
-  setTimeout(function(){
-    if(!cur)return;
-    var raw=$('#psearch').value.trim();var toks=raw.split(/[\s,;]+/).filter(Boolean);
-    if(toks.length>=2&&toks.every(function(x){return /^\d{4,}$/.test(x)})){
-      var r=addMatches(toks,true);$('#psearch').value='';poolShown=40;renderEditor();toast(addToastMsg(r));
-    }
-  },0);
-});
 // drag reorder in the preset list
 var dragId=null;
 document.addEventListener('dragstart',function(e){var r=e.target.closest('#pgames .gr');if(r&&r.getAttribute('data-gid')){dragId=r.getAttribute('data-gid');r.style.opacity='.5';}});
